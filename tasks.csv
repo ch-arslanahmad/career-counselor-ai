@@ -1,0 +1,62 @@
+title,sprint,status,assigned-to,labels,priority
+Define problem statement and scope,sprint-1,To Do,Arslan,milestone-1,P0
+Identify stakeholders,sprint-1,To Do,TBD,milestone-1,P0
+Conduct feasibility study,sprint-1,To Do,TBD,milestone-1,P0
+Create SRS document - Functional requirements,sprint-1,To Do,TBD,milestone-2,P0
+Create SRS document - Non-functional requirements,sprint-1,To Do,TBD,milestone-2,P0
+Requirement prioritization,sprint-1,To Do,TBD,milestone-2,P0
+System architecture design,sprint-2,To Do,Arslan,milestone-3,P0
+Create ER Diagram,sprint-2,To Do,Arslan,milestone-3,P0
+Create Architecture Document,sprint-2,Done,Arslan,milestone-3,P0
+Create UML Use Case diagram,sprint-2,To Do,TBD,milestone-4,P1
+Create UML Sequence diagram,sprint-2,To Do,TBD,milestone-4,P1
+Create UML Class diagram,sprint-2,To Do,TBD,milestone-4,P1
+Create UML Activity diagram,sprint-2,To Do,TBD,milestone-4,P1
+Apply design patterns,sprint-2,To Do,TBD,milestone-5,P1
+Create UI Design Document,sprint-2,To Do,TBD,milestone-5,P1
+Build Static HTML Form - Career recommendation,sprint-3,To Do,Arslan,milestone-6,P0
+Build Static HTML Form - Interest finding,sprint-3,To Do,Arslan,milestone-6,P0
+Build Static HTML Form - Roadmap generation,sprint-3,To Do,Arslan,milestone-6,P0
+Frontend Validation - Input validation,sprint-3,To Do,Arslan,milestone-6,P1
+Frontend States - Loading/error/empty states,sprint-3,To Do,Arslan,milestone-6,P1
+Response Cards - Recommendation card,sprint-3,To Do,Arslan,milestone-6,P1
+Response Cards - Subject list card,sprint-3,To Do,Arslan,milestone-6,P1
+Response Cards - Roadmap steps card,sprint-3,To Do,Arslan,milestone-6,P1
+Database Setup - Install MySQL server,sprint-3,To Do,Arslan,milestone-6,P0
+Database Setup - Create database and credentials,sprint-3,To Do,Arslan,milestone-6,P0
+Database Setup - Test connectivity from backend,sprint-3,To Do,Arslan,milestone-6,P0
+Schema Design - Define tables based on requirements,sprint-3,To Do,Arslan,milestone-6,P0
+ORM Setup - Install SQLAlchemy and MySQL driver,sprint-3,To Do,Arslan,milestone-6,P0
+ORM Setup - Create Python models matching schema,sprint-3,To Do,Arslan,milestone-6,P0
+Seed Data - Populate tables with initial data,sprint-3,To Do,Arslan,milestone-6,P1
+Python Backend - Initialize FastAPI project,sprint-3,To Do,Arslan,milestone-6,P0
+Python Backend - Define API contract and schemas,sprint-3,To Do,Arslan,milestone-6,P0
+Python Backend - Implement API endpoints,sprint-3,To Do,Arslan,milestone-6,P0
+Sprint Report - sprint-3,sprint-3,To Do,TBD,milestone-6,P1
+React Setup - Initialize with Vite,sprint-4,To Do,Arslan,milestone-7,P0
+React Setup - Project structure,sprint-4,To Do,Arslan,milestone-7,P0
+React Components - Convert HTML forms to React,sprint-4,To Do,Arslan,milestone-7,P0
+React State - Implement useState management,sprint-4,To Do,Arslan,milestone-7,P0
+React Components - Response cards,sprint-4,To Do,Arslan,milestone-7,P1
+LLM Integration - Provider abstraction,sprint-4,To Do,Arslan,milestone-7,P0
+LLM Integration - Prompt template loader,sprint-4,To Do,Arslan,milestone-7,P0
+LLM Integration - Fallback behavior,sprint-4,To Do,Arslan,milestone-7,P0
+AI Features - Intent detection,sprint-4,To Do,Arslan,milestone-7,P0
+AI Features - Entity extraction,sprint-4,To Do,Arslan,milestone-7,P0
+AI Features - Recommendation engine,sprint-4,To Do,Arslan,milestone-7,P0
+AI Features - Roadmap generator,sprint-4,To Do,Arslan,milestone-7,P0
+AI Features - Follow-up question support (optional),sprint-4,To Do,Arslan,milestone-7,P1
+Version Control Records,sprint-4,To Do,TBD,milestone-7,P1
+Sprint Report - sprint-4,sprint-4,To Do,TBD,milestone-7,P1
+Skills Gap Analysis,sprint-5,To Do,Arslan,milestone-8,P1
+Comparison Outputs,sprint-5,To Do,Arslan,milestone-8,P1
+Export Data - CSV format (basic),sprint-5,To Do,Arslan,milestone-8,P1
+Unit Testing,sprint-5,To Do,Arslan,milestone-8,P1
+Integration Testing,sprint-5,To Do,Arslan,milestone-8,P1
+System Testing,sprint-5,To Do,Arslan,milestone-8,P1
+Test Report,sprint-5,To Do,TBD,milestone-8,P1
+Software Licensing Document,sprint-5,To Do,TBD,milestone-9,P2
+Activity Chart and Staff Allocation,sprint-5,To Do,TBD,milestone-10,P2
+Final Report,sprint-5,To Do,TBD,milestone-10,P0
+Presentation Slides,sprint-5,To Do,TBD,milestone-10,P0
+Source Code Submission,sprint-5,To Do,Arslan,milestone-10,P0
