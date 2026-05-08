@@ -34,30 +34,28 @@ No tasks are pre-assigned. Claim tasks by adding your name + date when you start
 
 ## Phase1: Static Front-End (HTML/CSS/JS)
 
-- [ ] **Static HTML Forms**
-  - [ ] Build Career Recommendation form
-     - Fields: interests, background, education level, goals
-     - Style with plain CSS
-     - Vanilla JS for form validation and API calls
-  - [ ] Build Interest Finding form
-     - Fields: personality questions, preferences, skills
-     - Style with plain CSS
-  - [ ] Build Roadmap Generation form
-     - Fields: selected career, timeline preferences, current status
-     - Style with plain CSS
+**Structure:** Single page with tabs (SPA-style), 2 forms.
 
-- Output for each form in structured data and do not make a new page (for now).
+- [ ] **Static HTML Forms**
+  - [x] Build Career Recommendation form
+     - Fields: name, interests (chips), skills (chips), education level, career goals (chips), preferred industry (chips), preferred location, additional notes
+     - Output: Career cards
+  - [x] Build Roadmap Generation form
+     - Fields: career/topic, timeline, current status
+     - Output: Step-by-step roadmap cards
+
+- Output for each form displayed inline (same page, no navigation), with (no or dummy) data for now.
 
 - [ ] **Response Cards UI**
-  - [ ] Recommendation card (career suggestions + match reasoning)
-  - [ ] Subject list card (course/subject recommendations)
+
+  - [ ] Career recommendation card (career suggestions + match score + reasoning)
   - [ ] Roadmap steps card (step-by-step learning plan)
-  - [ ] Comparison output card between options of recommendations (optional MVP enhancement)
+  - [ ] "Generate Roadmap" button on each career card (opens Roadmap tab with pre-filled data)
 
 - [ ] **Frontend Validation and States**
   - [ ] Add basic input validation for all forms
   - [ ] Add loading/error/empty states for API responses
-  - [ ] Add reusable UI components for consistent response display
+  - [ ] Tab navigation (show/hide sections)
 
 ---
 
@@ -104,7 +102,8 @@ No tasks are pre-assigned. Claim tasks by adding your name + date when you start
   - [ ] Migrate Career Recommendation form to React
   - [ ] Migrate Interest Finding form to React
   - [ ] Migrate Roadmap Generation form to React
-  - [ ] Implement state management
+  - [ ] Implement tab navigation as React state
+  - [ ] Implement state management for form outputs
 
 - [ ] **Response Cards UI (React)**
   - [ ] Recommendation card (career suggestions + match reasoning)

@@ -3,7 +3,9 @@
 ## Tech Stack
 
 ### MVP Phase (Static)
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Frontend**: HTML5 with tab navigation (single page, 2 forms)
+  - Career Recommendation form → career cards with "Generate Roadmap" button
+  - Interest Finding form → subject/course cards
 - **Backend**: Python (FastAPI or Flask)
 - **Database**: MySQL
 - **AI**: LLM API (OpenAI, Anthropic, etc.)
@@ -19,11 +21,14 @@
 ### A. Presentation Layer
 
 **MVP (Static HTML)**
-- HTML forms for career path recommendation
-- HTML forms for roadmap generation
-- HTML forms for interest finding
+- Single page with tab navigation (2 forms)
+- Career Recommendation form → career cards output
+- Roadmap Generation form → step-by-step roadmap cards output
 - Plain CSS styling
-- Vanilla JS for form validation and API calls
+- Vanilla JS for tab switching, form validation, and API calls
+
+In the backend, its from Python.
+
 
 **PoC/Production (React)**
 - Interactive UI with enhanced form-based and query-based inputs

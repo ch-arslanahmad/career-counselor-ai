@@ -11,241 +11,211 @@
       <p>Find your path to a fulfilling career</p>
     </header>
 
-    <p>Tell us about yourself to get personalized career suggestions</p>
+    <main>
+      <nav class="tabs">
+        <a href="#career" class="tab active">Career Recommendation</a>
+        <a href="#roadmap" class="tab">Roadmap Generation</a>
+      </nav>
 
-    <form>
-      <label for="name">Name: </label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        placeholder="Your Name"
-        required />
+      <!-- Tab 1: Career Recommendation -->
+      <section id="career" class="tab-content active">
+        <h2>Career Recommendation</h2>
+        <p>Tell us about yourself to get personalized career suggestions</p>
 
-      <!-- Interests - Chip Selector -->
+        <form id="career-form">
+          <!-- Name -->
+          <fieldset class="field">
+            <legend>Name</legend>
+            <input type="text" id="name" name="name" placeholder="Your Name" />
+          </fieldset>
 
-      <fieldset class="field">
-        <legend>Interests</legend>
-        <p class="help">Select all that apply</p>
-        <div class="chips">
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="technology" />
-            Technology</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="business" />
-            Business</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="healthcare" />
-            Healthcare</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="education" />
-            Education</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="arts" /> Arts &
-            Design</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="science" />
-            Science</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="sports" /> Sports &
-            Fitness</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="law" /> Law &
-            Politics</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="social" /> Social
-            Work</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="interests" value="media" /> Media &
-            Communications</label
-          >
+          <!-- Interests - Chip Selector -->
+          <fieldset class="field">
+            <legend>Interests <span class="required">*</span></legend>
+            <div class="chips">
+              <!-- todo: add data dynamically via JS -->
+              <!-- todo: add another chip for others if selected adds a new required text-input -->
+            </div>
+          </fieldset>
 
-          <!-- todo: add another chip for others if selected adds a new required text-input which only takes text in a certain format -->
+          <!-- Skills - Chip Selector -->
+          <fieldset class="field">
+            <legend>Skills <span class="required">*</span></legend>
+            <p class="help">Select your skills</p>
+            <div class="chips">
+              <!-- todo: add data dynamically via JS -->
+            </div>
+          </fieldset>
+
+          <!-- Education Level -->
+          <fieldset class="field">
+            <legend>Education Level <span class="required">*</span></legend>
+            <select id="education_level" name="education_level" required>
+              <option value="">Select your education level</option>
+              <option value="high_school">High School Diploma</option>
+              <option value="some_college">Some College / Associate</option>
+              <option value="bachelors">Bachelor's Degree</option>
+              <option value="masters">Master's Degree</option>
+              <option value="phd">PhD / Doctoral</option>
+              <option value="bootcamp">Coding Bootcamp</option>
+              <option value="certificate">Professional Certificate</option>
+              <option value="other">Other</option>
+            </select>
+          </fieldset>
+
+          <!-- Career Goals - Chip Selector -->
+          <fieldset class="field">
+            <legend>Career Goals <span class="required">*</span></legend>
+            <p class="help">What do you want to achieve?</p>
+            <div class="chips">
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="job" /> Get a
+                Job</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="career_change" />
+                Change Careers</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="advance" /> Advance
+                in Current Field</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="start_business" />
+                Start Own Business</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="freelance" /> Work
+                Freelance</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="remote" /> Work
+                Remotely</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="flexible" />
+                Flexible Schedule</label
+              >
+              <label class="chip"
+                ><input type="checkbox" name="goals" value="higher_salary" />
+                Higher Salary</label
+              >
+            </div>
+          </fieldset>
+
+          <!-- Preferred Industry -->
+          <fieldset class="field">
+            <legend>Preferred Industry</legend>
+            <p class="help">Select all that apply</p>
+            <div class="chips">
+              <!-- todo: add data dynamically via JS -->
+            </div>
+          </fieldset>
+
+          <!-- Preferred Location -->
+          <fieldset class="field">
+            <legend>Preferred Location</legend>
+            <p class="help">used for personalization only</p>
+            <select name="location" id="location">
+              <option value="">Select country</option>
+              <!-- todo: add data dynamically via JS -->
+            </select>
+          </fieldset>
+
+          <!-- Additional Notes -->
+          <fieldset class="field">
+            <legend>Additional Notes</legend>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              placeholder="Anything else you'd like us to know?"></textarea>
+          </fieldset>
+
+          <!-- Submit -->
+          <fieldset class="field">
+            <button type="submit">Get Recommendations</button>
+          </fieldset>
+        </form>
+
+        <!-- Career Output -->
+        <div id="career-output" class="output-section" style="display: none">
+          <h3>Your Career Recommendations</h3>
+          <div id="career-cards">
+            <!-- Career cards will be inserted here -->
+             <!-- use the bento grid if applicable -->
+          </div>
         </div>
-      </fieldset>
+      </section>
 
-      <!-- Skills - Chip Selector -->
-      <fieldset class="field">
-        <legend>Skills</legend>
-        <p class="help">Select your skills</p>
-        <div class="chips">
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="programming" />
-            Programming</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="design" />
-            Design</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="communication" />
-            Communication</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="analysis" /> Data
-            Analysis</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="management" />
-            Management</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="writing" />
-            Writing</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="sales" /> Sales &
-            Marketing</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="teaching" />
-            Teaching</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="research" />
-            Research</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="skills" value="leadership" />
-            Leadership</label
-          >
+      <!-- Tab 2: Roadmap Generation -->
+      <section id="roadmap" class="tab-content">
+        <h2>Roadmap Generation</h2>
+        <p>Get a step-by-step learning plan to reach your career goals</p>
+
+        <form id="roadmap-form">
+          <!-- Selected Career/Topic -->
+          <fieldset class="field">
+            <legend>Career or Topic <span class="required">*</span></legend>
+            <input
+              type="text"
+              id="career_topic"
+              name="career_topic"
+              placeholder="e.g., Software Developer, Machine Learning"
+              required />
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Timeline <span class="required">*</span></legend>
+            <select id="timeline" name="timeline" required>
+              <option value="">Select timeline</option>
+              <option value="3months">3 months</option>
+              <option value="6months">6 months</option>
+              <option value="1year">1 year</option>
+              <option value="2years">2 years</option>
+              <option value="5years">5 years</option>
+            </select>
+          </fieldset>
+
+          <!-- Current Status -->
+          <fieldset class="field">
+            <legend>Current Status <span class="required">*</span></legend>
+            <select id="current_status" name="current_status" required>
+              <option value="">Select your current level</option>
+              <option value="beginner">Beginner - No prior knowledge</option>
+              <option value="some_knowledge">
+                Some Knowledge - Basic understanding
+              </option>
+              <option value="intermediate">
+                Intermediate - Working knowledge
+              </option>
+              <option value="advanced">Advanced - Expert level</option>
+            </select>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Additional Notes</legend>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              placeholder="Anything else you would like in the roadmap?"></textarea>
+          </fieldset>
+
+          <!-- Submit -->
+          <fieldset class="field">
+            <button type="submit">Generate Roadmap</button>
+          </fieldset>
+        </form>
+
+        <!-- Roadmap Output -->
+        <div id="roadmap-output" class="output-section" style="display: none">
+          <h3>Your Learning Roadmap</h3>
+          <div id="roadmap-steps">
+            <!-- Roadmap steps will be inserted here -->
+          </div>
         </div>
-      </fieldset>
-
-      <!-- Education Level -->
-      <fieldset class="field">
-        <legend for="education_level">Education Level</legend>
-        <select id="education_level" name="education_level" required>
-          <option value="">Select your education level</option>
-          <option value="high_school">High School Diploma</option>
-          <option value="some_college">Some College / Associate</option>
-          <option value="bachelors">Bachelor's Degree</option>
-          <option value="masters">Master's Degree</option>
-          <option value="phd">PhD / Doctoral</option>
-          <option value="bootcamp">Coding Bootcamp</option>
-          <option value="certificate">Professional Certificate</option>
-          <option value="other">Other</option>
-        </select>
-      </fieldset>
-
-      <!-- Field of Study -->
-      <fieldset class="field">
-        <label for="field_of_study">Field of Study</label>
-        <input
-          type="text"
-          id="field_of_study"
-          name="field_of_study"
-          placeholder="e.g., Computer Science, Business Administration" />
-
-        <!-- later add options with one required field if selects other -->
-      </fieldset>
-
-      <!-- Career Goals - Chip Selector -->
-      <fieldset class="field">
-        <legend>Career Goals</legend>
-        <p class="help">What do you want to achieve?</p>
-        <div class="chips">
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="job" /> Get a Job</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="career_change" /> Change
-            Careers</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="advance" /> Advance in
-            Current Field</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="start_business" /> Start
-            Own Business</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="freelance" /> Work
-            Freelance</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="remote" /> Work
-            Remotely</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="flexible" /> Flexible
-            Schedule</label
-          >
-          <label class="chip"
-            ><input type="checkbox" name="goals" value="higher_salary" /> Higher
-            Salary</label
-          >
-        </div>
-      </fieldset>
-
-      <!-- Work Environment Preference -->
-      <fieldset class="field">
-        <legend for="work_environment">Preferred Work Environment</legend>
-        <select id="work_environment" name="work_environment">
-          <option value="">No preference</option>
-          <option value="remote">Remote</option>
-          <option value="onsite">On-site (Office)</option>
-          <option value="hybrid">Hybrid</option>
-          <option value="field">Field Work (Traveling)</option>
-          <option value="outdoor">Outdoor</option>
-        </select>
-      </fieldset>
-
-      <!-- Preferred Industry -->
-      <fieldset class="field">
-        <legend for="industry">Preferred Industry</legend>
-        <select id="industry" name="industry" required>
-          <option value="">Any industry</option>
-          <option value="technology">Technology / Software</option>
-          <option value="healthcare">Healthcare</option>
-          <option value="finance">Finance & Banking</option>
-          <option value="education">Education</option>
-          <option value="retail">Retail & E-commerce</option>
-          <option value="manufacturing">Manufacturing</option>
-          <option value="media">Media & Entertainment</option>
-          <option value="consulting">Consulting</option>
-          <option value="government">Government</option>
-          <option value="nonprofit">Non-profit</option>
-          <option value="startup">Startups</option>
-          <option value="other">Other</option>
-          <!-- todo: for the last option when selected, add a mandatory field -->
-        </select>
-      </fieldset>
-
-      <!-- Your Location -->
-      <fieldset class="field">
-        <legend for="location">Preferred Location</legend>
-
-        <!-- todo: add a note that its only for personalization & optional -->
-
-        <select name="location" id="location">
-          <option value="Pakistan">Pakistan</option>
-          <!-- todo: add all the remaining countries -->
-        </select>
-      </fieldset>
-
-      <!-- Additional Notes -->
-      <fieldset class="field">
-        <legend for="notes">Additional Notes</legend>
-        <textarea
-          id="notes"
-          name="notes"
-          rows="3"
-          placeholder="Anything else you'd like us to know?"></textarea>
-      </fieldset>
-
-      <!-- Submit -->
-      <button type="submit">Get Recommendations</button>
-    </form>
+      </section>
+    </main>
   </body>
 </html>
