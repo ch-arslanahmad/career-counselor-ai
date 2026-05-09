@@ -17,57 +17,26 @@ class CareerFormData {
   locations = [];
 }
 
-// class for holding User Input for Career Form, CareerFormInput
+// ---
 
-const interests = [
-  "Technology",
-  "Business",
-  "Arts",
-  "Science",
-  "Health",
-  "Education",
-];
-const skills = [
-  "Programming",
-  "Data Analysis",
-  "Project Management",
-  "Design",
-  "Writing",
-  "Research",
-];
-const industries = [
-  "Tech",
-  "Finance",
-  "Healthcare",
-  "Education",
-  "Entertainment",
-];
-const locations = [
-  "USA",
-  "Canada",
-  "UK",
-  "Germany",
-  "Australia",
-  "Pakistan",
-  "India",
-  "China",
-];
+// an async IIFE method
+// ? an async IIFE (Immediately Invoked Function Expression) is an async method that runs immediately after it is defined.
+// This allows us to use await inside the function without having to define a separate async function and then call it, as await requires an async function.
 
-let form_data = new CareerFormData(interests, skills, industries, locations);
+// --- Utility Functions ---
 
-const interestsContainer = document.getElementById("interests-chips");
-const skillsContainer = document.getElementById("skills-chips");
-const industriesContainer = document.getElementById("industries-chips");
-const locationsContainer = document.getElementById("locations-chips");
+async function getEndpointData(endpoint) {
+  const res = await fetch(`http://localhost:8001/${endpoint}`);
+  return await res.json();
+}
 
-loadChips(form_data.interests, interestsContainer);
-loadChips(form_data.skills, skillsContainer);
-loadChips(form_data.industries, industriesContainer);
-loadChips(form_data.locations, locationsContainer);
+const getDataFromEndpoint = async (endpoint) => {
+  const data = await getEndpointData(endpoint);
+  return data;
+};
 
+// create new chips based on the array of options
 function loadChips(array, container) {
-  // create new chips based on the array of options
-
   array.forEach((item) => {
     const chip = document.createElement("button");
     chip.className = "chip";
@@ -75,50 +44,86 @@ function loadChips(array, container) {
     chip.innerText = item;
     container.appendChild(chip);
   });
+}
 
-  let html = `<label for="${container.id}">${container.previousElementSibling.innerText} <span class="required">*</span></label><div class="chips">`;
+// load options for select dropdowns
+function loadOptions(items, select) {
+  if (!select) return;
+  items.forEach((item) => {
+    const opt = document.createElement("option");
+    opt.value = item.toLowerCase();
+    opt.textContent = item;
+    select.appendChild(opt);
+  });
+}
 
-  // Generate Mock Recommendations
-  function generateMockRecommendations(data) {
-    const mockRecommendations = [
-      {
-        title: "Software Developer",
-        description:
-          "Design, develop, and maintain software applications. Strong fit for tech interests and your educational background.",
-        matchScore: "92%",
-        reasoning:
-          "Your background in " +
-          data.education_level +
-          " combined with interest in " +
-          (data.interests || "technology") +
-          " makes this a strong match.",
-      },
-      {
-        title: "Data Analyst",
-        description:
-          "Analyze data and provide insights to support business decisions. Growing demand across all industries.",
-        matchScore: "85%",
-        reasoning:
-          "Good alignment with your goals and the analytical skills from your background.",
-      },
-      {
-        title: "Product Manager",
-        description:
-          "Lead product development from concept to launch. Combine tech skills with business acumen.",
-        matchScore: "78%",
-        reasoning:
-          "Matches your interest in " +
-          (data.interests || "technology") +
-          " and career goals.",
-      },
-    ];
+// this is used only for the main form, where fields are to be populated
+async function populateForm() {
+  // creating a new CareerFormData object with data from the endpoints
+  let form_data = new CareerFormData(
+    (await getDataFromEndpoint("options/interests")).interests,
+    (await getDataFromEndpoint("options/skills")).skills,
+    (await getDataFromEndpoint("options/industries")).industries,
+    (await getDataFromEndpoint("options/locations")).locations,
+  );
 
-    return mockRecommendations;
-  }
+  // -- FETCH main form chips containers
+  const interestsContainer = document.getElementById("interests-chips");
+  const skillsContainer = document.getElementById("skills-chips");
+  const industriesContainer = document.getElementById("industries-chips");
 
-  // Create Recommendation Card HTML
-  function createRecommendationCard(rec) {
-    return `
+  // a dropdown container for locatiosn
+  const locationsContainer = document.getElementById("location");
+
+  loadChips(form_data.interests, interestsContainer);
+  loadChips(form_data.skills, skillsContainer);
+  loadChips(form_data.industries, industriesContainer);
+  loadOptions(form_data.locations, locationsContainer);
+}
+
+populateForm(); // call the function to populate the form on page load
+
+// Generate Mock Recommendations
+function generateMockRecommendations(data) {
+  const mockRecommendations = [
+    {
+      title: "Software Developer",
+      description:
+        "Design, develop, and maintain software applications. Strong fit for tech interests and your educational background.",
+      matchScore: "92%",
+      reasoning:
+        "Your background in " +
+        data.education_level +
+        " combined with interest in " +
+        (data.interests || "technology") +
+        " makes this a strong match.",
+    },
+    {
+      title: "Data Analyst",
+      description:
+        "Analyze data and provide insights to support business decisions. Growing demand across all industries.",
+      matchScore: "85%",
+      reasoning:
+        "Good alignment with your goals and the analytical skills from your background.",
+    },
+    {
+      title: "Product Manager",
+      description:
+        "Lead product development from concept to launch. Combine tech skills with business acumen.",
+      matchScore: "78%",
+      reasoning:
+        "Matches your interest in " +
+        (data.interests || "technology") +
+        " and career goals.",
+    },
+  ];
+
+  return mockRecommendations;
+}
+
+// Create Recommendation Card HTML
+function createRecommendationCard(rec) {
+  return `
     <div class="card">
       <h4>${rec.title}</h4>
       <p>${rec.description}</p>
@@ -126,5 +131,15 @@ function loadChips(array, container) {
       <span class="match-score">${rec.matchScore} Match</span>
     </div>
   `;
-  }
 }
+
+// -- TESTING
+
+// ? function to test endpoints
+const testEndpoint = async (endpoint) => {
+  const data = await getEndpointData(endpoint);
+  console.log(data);
+  console.log(`Endpoint ${endpoint} is working!`);
+};
+
+testEndpoint("options/skills");

@@ -36,7 +36,7 @@ No tasks are pre-assigned. Claim tasks by adding your name + date when you start
 
 **Structure:** Single page with tabs (SPA-style), 2 forms.
 
-- [ ] **Static HTML Forms**
+- [x] **Static HTML Forms**
   - [x] Build Career Recommendation form
      - Fields: name, interests (chips), skills (chips), education level, career goals (chips), preferred industry (chips), preferred location, additional notes
      - Output: Career cards

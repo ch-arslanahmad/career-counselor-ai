@@ -4,8 +4,8 @@
 
 ### MVP Phase (Static)
 - **Frontend**: HTML5 with tab navigation (single page, 2 forms)
-  - Career Recommendation form → career cards with "Generate Roadmap" button
-  - Interest Finding form → subject/course cards
+  - Career Recommendation form → career cards output + "Generate Roadmap" button
+  - Roadmap Generation form → step-by-step roadmap cards output
 - **Backend**: Python (FastAPI or Flask)
 - **Database**: MySQL
 - **AI**: LLM API (OpenAI, Anthropic, etc.)
@@ -32,7 +32,7 @@ In the backend, its from Python.
 
 **PoC/Production (React)**
 - Interactive UI with enhanced form-based and query-based inputs
-- Response cards: recommendation, subject list, roadmap steps, comparison output
+- Response cards: career recommendations, roadmap steps, skills gap analysis
 - Component-based architecture for reusability
 - Optional: Follow-up question support as enhancement
 
