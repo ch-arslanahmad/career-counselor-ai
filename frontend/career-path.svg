@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1263" height="1185" viewBox="0 0 1263 1185">
+
+<defs>
+  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" style="stop-color:#12c7c7;stop-opacity:1" />
+    <stop offset="100%" style="stop-color:#1277db;stop-opacity:1" />
+  </linearGradient>
+</defs>
+
+<path d="M 800 941 L 788 956 L 798 968 L 807 968 L 816 961 L 816 947 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 457 941 L 445 949 L 444 957 L 452 968 L 463 968 L 472 960 L 472 949 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 997 756 L 988 763 L 987 774 L 1003 783 L 1012 777 L 1013 763 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 266 756 L 248 766 L 249 775 L 258 782 L 271 780 L 276 771 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 1004 404 L 987 413 L 988 424 L 998 431 L 1009 427 L 1015 418 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 259 404 L 248 414 L 248 421 L 257 430 L 267 430 L 275 422 L 275 411 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 799 218 L 791 224 L 789 235 L 806 244 L 816 235 L 816 225 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 454 218 L 445 226 L 445 234 L 461 244 L 472 236 L 472 225 L 464 218 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 621 0 L 598 12 L 584 34 L 583 54 L 589 70 L 617 95 L 535 390 L 495 372 L 298 252 L 291 251 L 290 257 L 428 491 L 438 495 L 474 485 L 436 413 L 437 408 L 442 409 L 611 576 L 620 593 L 97 592 L 87 567 L 61 547 L 35 547 L 8 567 L 0 599 L 16 629 L 38 640 L 70 635 L 84 624 L 95 605 L 427 692 L 428 698 L 290 927 L 292 934 L 531 795 L 530 750 L 523 749 L 456 784 L 451 778 L 624 604 L 630 605 L 630 1090 L 595 1107 L 584 1126 L 583 1143 L 594 1168 L 610 1181 L 644 1184 L 666 1170 L 679 1147 L 676 1119 L 647 1093 L 725 795 L 775 818 L 965 933 L 973 932 L 833 693 L 823 689 L 787 698 L 821 764 L 822 776 L 817 775 L 653 612 L 645 597 L 1158 594 L 1170 600 L 1173 616 L 1192 635 L 1226 640 L 1253 623 L 1262 592 L 1261 579 L 1251 562 L 1227 547 L 1194 551 L 1165 581 L 833 494 L 887 393 L 971 260 L 971 250 L 731 391 L 728 401 L 735 435 L 807 400 L 816 400 L 815 405 L 640 582 L 631 584 L 632 95 L 666 78 L 677 62 L 680 40 L 660 9 L 642 0 Z" fill="url(#grad)" stroke="url(#grad)" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>
