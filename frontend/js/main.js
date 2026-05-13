@@ -37,10 +37,12 @@ const getDataFromEndpoint = async (endpoint) => {
 
 // create new chips based on the array of options
 function loadChips(array, container) {
+  if (!container) return;
   array.forEach((item) => {
     const chip = document.createElement("button");
+    chip.type = "button"; // prevent implicit form submit when inside a form
     chip.className = "chip";
-    chip.value = item;
+    chip.value = item.toLowerCase();
     chip.innerText = item;
     container.appendChild(chip);
   });
@@ -68,12 +70,12 @@ async function populateForm() {
   );
 
   // -- FETCH main form chips containers
-  const interestsContainer = document.getElementById("interests-chips");
-  const skillsContainer = document.getElementById("skills-chips");
-  const industriesContainer = document.getElementById("industries-chips");
+  const interestsContainer = document.querySelector("#interests-chips");
+  const skillsContainer = document.querySelector("#skills-chips");
+  const industriesContainer = document.querySelector("#industries-chips");
 
   // a dropdown container for locatiosn
-  const locationsContainer = document.getElementById("location");
+  const locationsContainer = document.querySelector("#location");
 
   loadChips(form_data.interests, interestsContainer);
   loadChips(form_data.skills, skillsContainer);
@@ -82,6 +84,50 @@ async function populateForm() {
 }
 
 populateForm(); // call the function to populate the form on page load
+
+// ... make the form input required after i press submit button
+// added the form.submitted option, so when button cliked, then adds class to form, which checks for the invalid or not filled fields, and shows the error message if any field is not filled, otherwise submits the form.
+
+// ? only for first form
+document
+  .querySelector("button[type='submit']")
+  .addEventListener("click", () => {
+    const form = document.getElementById("career-form");
+    form.classList.add("submitted");
+  });
+
+// all forms
+document.querySelectorAll("button[type='submit']").forEach((button) => {
+  button.addEventListener("click", () => {
+    const form = button.closest("form");
+    form.classList.add("submitted");
+  });
+});
+
+// ... make the chip buttons clickable.
+
+// () => means an arrow function, called an anonymous function, used with event handler
+document.querySelectorAll(".chips").forEach((container) => {
+  container.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+
+    if (!chip) return;
+
+    chip.classList.toggle("selected");
+
+    // if its others add text input
+    if (chip.value == "others") {
+      const wrapper = chip
+        .closest(".field")
+        .querySelector(".chip-input-wrapper");
+      if (wrapper) {
+        const isVisible = wrapper.classList.toggle("visible");
+
+        wrapper.querySelector("input").required = isVisible; // make the input required if visible, otherwise not required
+      }
+    }
+  });
+});
 
 // Generate Mock Recommendations
 function generateMockRecommendations(data) {

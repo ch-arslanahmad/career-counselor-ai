@@ -9,6 +9,7 @@ Last Updated: 2026-05-06
 **Source of Truth:** `tasks.csv` (not committed to repo - local only)
 
 **Use `tasks.csv` for:**
+
 - Notion board import
 - Sprint reports (Gantt charts, staff allocation tables)
 - Activity bar charts for deliverables
@@ -16,12 +17,14 @@ Last Updated: 2026-05-06
 **Markdown version:** This file mirrors `tasks.csv` for GitHub viewing. Update both when tasks change.
 
 **Task Claiming Rules (No Pre-Assignment):**
+
 - Checkbox Status:
   - `[ ]` - Task is pending (not started)
   - `[-]` - Task is in progress
   - `[x]` - Task is completed
 
 Workflow:
+
 - Before starting a task, mark it `[-]` and add your name + date
 - Example: `- [-] Initialize React project structure - Arslan (2026-05-06)`
 - When done, switch to `[x]` and keep name + completion date
@@ -38,16 +41,19 @@ No tasks are pre-assigned. Claim tasks by adding your name + date when you start
 
 - [x] **Static HTML Forms**
   - [x] Build Career Recommendation form
-     - Fields: name, interests (chips), skills (chips), education level, career goals (chips), preferred industry (chips), preferred location, additional notes
-     - Output: Career cards
+    - Fields: name, interests (chips), skills (chips), education level, career goals (chips), preferred industry (chips), preferred location, additional notes
+    - Output: Career cards
   - [x] Build Roadmap Generation form
-     - Fields: career/topic, timeline, current status
-     - Output: Step-by-step roadmap cards
+    - Fields: career/topic, timeline, current status
+    - Output: Step-by-step roadmap cards
 
 - Output for each form displayed inline (same page, no navigation), with (no or dummy) data for now.
 
-- [ ] **Response Cards UI**
+- [x] **API Endpoints - Form Options**
+  - [x] GET `/options/skills`, `/options/interests`, `/options/industries`, `/options/locations` - Returns interests, skills, industries, locations for form chips/dropdowns
+  - [x] Frontend dynamically populates form fields from API
 
+- [ ] **Response Cards UI**
   - [ ] Career recommendation card (career suggestions + match score + reasoning)
   - [ ] Roadmap steps card (step-by-step learning plan)
   - [ ] "Generate Roadmap" button on each career card (opens Roadmap tab with pre-filled data)

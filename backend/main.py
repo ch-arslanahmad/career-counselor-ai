@@ -7,7 +7,12 @@ app = FastAPI()
 # CORS is a browser security rule. not allowing frontend to access backend if they are on different ports.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:8001",
+        "http://0.0.0.0:8000",
+        "http://localhost:8000",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -32,6 +37,10 @@ industries = ["Software", "Healthcare", "Finance", "Education"]
 locations = ["USA", "Canada", "UK", "Germany", "Australia", "Pakistan", "India", "China"]
 
 
+skills.append("Others")
+interests.append("Others")
+industries.append("Others")
+locations.append("Others")
 
 @app.get("/options/skills")
 def get_skills():
