@@ -3,36 +3,34 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from pathlib import Path
 from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 from database import SessionLocal, init_db
-from fallback_data import fallback_catalog_path, load_fallback_catalog
 from models import Career, CareerSkill, RoadmapStep, Skill
 
 
 def load_remote_catalog(url: str) -> dict[str, Any]:
     headers = {"Accept": "application/json"}
-    token = os.getenv("ONET_BEARER_TOKEN")
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
+    api_key = os.getenv("ONET_API_KEY")
+    if not api_key:
+        raise RuntimeError("ONET_API_KEY is required.")
+    headers["X-API-Key"] = api_key
 
     request = Request(url, headers=headers)
     with urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
-def load_catalog(remote_url: str | None, use_fallback_on_error: bool) -> dict[str, Any]:
-    if remote_url:
-        try:
-            return load_remote_catalog(remote_url)
-        except (URLError, TimeoutError, json.JSONDecodeError, OSError):
-            if not use_fallback_on_error:
-                raise
+def load_catalog(remote_url: str | None) -> dict[str, Any]:
+    if not remote_url:
+        raise RuntimeError("ONET_API_URL is required.")
 
-    return load_fallback_catalog()
+    try:
+        return load_remote_catalog(remote_url)
+    except (URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(f"Failed to fetch O*NET data: {exc}") from exc
 
 
 def get_or_create_skill(session, skill_payload: dict[str, Any]) -> Skill:
@@ -157,17 +155,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--remote-url",
         default=os.getenv("ONET_API_URL"),
-        help="Optional remote JSON URL to fetch O*NET-style seed data from.",
-    )
-    parser.add_argument(
-        "--use-fallback-if-api-fails",
-        action="store_true",
-        help="Fall back to local JSON if the remote fetch fails.",
-    )
-    parser.add_argument(
-        "--fallback-path",
-        default=str(fallback_catalog_path()),
-        help="Override the fallback JSON path.",
+        help="Remote O*NET JSON URL to fetch seed data from.",
     )
     return parser
 
@@ -175,20 +163,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_arg_parser()
     args = parser.parse_args()
-
-    if args.fallback_path:
-        fallback_path = Path(args.fallback_path)
-        if fallback_path != fallback_catalog_path():
-            with fallback_path.open("r", encoding="utf-8") as handle:
-                catalog = json.load(handle)
-        else:
-            catalog = load_catalog(args.remote_url, args.use_fallback_if_api_fails)
-    else:
-        catalog = load_catalog(args.remote_url, args.use_fallback_if_api_fails)
+    catalog = load_catalog(args.remote_url)
 
     seed_database(catalog)
 
 
 if __name__ == "__main__":
     main()
-
