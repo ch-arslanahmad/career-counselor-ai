@@ -194,15 +194,16 @@ function setChipSelections(container, selectedValues = [], otherText = "") {
   const input = wrapper.querySelector("input");
 
   container.querySelectorAll(".chip").forEach((chip) => {
-    const chipValue = (chip.value || chip.textContent || "")
-      .trim();
+    const chipValue = (chip.value || chip.textContent || "").trim();
     chip.classList.toggle("selected", selectedSet.has(chipValue));
   });
 
   const otherChip = Array.from(container.querySelectorAll(".chip")).find(
     (chip) => isOtherChip(chip),
   );
-  const isOtherSelected = Boolean(otherChip && otherChip.classList.contains("selected"));
+  const isOtherSelected = Boolean(
+    otherChip && otherChip.classList.contains("selected"),
+  );
 
   if (wrapper && input) {
     wrapper.classList.toggle("visible", isOtherSelected);
@@ -394,3 +395,28 @@ const testEndpoint = async (endpoint) => {
 };
 
 // testEndpoint("options/skills");
+
+// -- TAB SWITCHING
+
+const tabs = document.querySelectorAll(".tab");
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    // remove the `active` tab
+    tabs.forEach((t) => t.classList.remove("active"));
+    // make the clicked tab active
+    tab.classList.add("active");
+
+    // select all tab-contents & remove active class
+    document
+      .querySelectorAll(".tab-content")
+      .forEach((c) => c.classList.remove("active"));
+
+    // find the clicked button target form
+    const target = document.querySelector(tab.getAttribute("href"));
+    // if found make the target form active
+    if (target) target.classList.add("active");
+  });
+});
