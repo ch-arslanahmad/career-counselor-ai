@@ -1,60 +1,39 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from database import db_health
+from routes.careers import router as careers_router
+from routes.db_options import router as options_router
 
+app = FastAPI(title="Career Counselor AI Backend")
 
-# CORS is a browser security rule. not allowing frontend to access backend if they are on different ports.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://127.0.0.1:5500",
+        "http://localhost:8000",
         "http://localhost:8001",
         "http://0.0.0.0:8000",
-        "http://localhost:8000",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-
+app.include_router(options_router)
+app.include_router(careers_router)
 
 
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return {"message": "Career Counselor AI backend is running"}
+
 
 @app.get("/ping")
 def ping():
     return {"message": "pong"}
 
-# -- OPTIONS for the MAIN FORM --
 
-skills = ["Python", "JavaScript", "Data Analysis", "Project Management"]
-interests = ["Technology", "Healthcare", "Finance", "Education", "Arts", "Science"]
-industries = ["Software", "Healthcare", "Finance", "Education"]
-locations = ["USA", "Canada", "UK", "Germany", "Australia", "Pakistan", "India", "China"]
-
-
-skills.append("Others")
-interests.append("Others")
-industries.append("Others")
-locations.append("Others")
-
-@app.get("/options/skills")
-def get_skills():
-    return {"skills": skills}
-
-@app.get("/options/interests")
-def get_interests():
-    return {"interests": interests}
-
-@app.get("/options/industries")
-def get_industries():
-    return {"industries": industries}
-
-@app.get("/options/locations")
-def get_locations():
-    return {"locations": locations}
-
+@app.get("/db/health")
+def health():
+    healthy, message = db_health()
+    return {"healthy": healthy, "message": message}
