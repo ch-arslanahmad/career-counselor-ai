@@ -281,6 +281,49 @@ const roadmapDummyData = {
   notes: "Focus on FastAPI, SQL, and deployment.",
 };
 
+function updateRoadmapPhaseState(phase, isComplete) {
+  const checkbox = phase.querySelector(".roadmap-task-checkbox");
+  const button = phase.querySelector(".roadmap-task-btn");
+
+  phase.classList.toggle("complete", isComplete);
+
+  if (isComplete) {
+    phase.classList.remove("current");
+  } else if (phase.dataset.defaultStatus === "current") {
+    phase.classList.add("current");
+  }
+
+  if (checkbox) checkbox.checked = isComplete;
+
+  if (button) {
+    button.textContent = isComplete ? "Completed" : "Mark as done";
+  }
+}
+
+function setupRoadmapTaskInteractions() {
+  document.querySelectorAll(".roadmap-phase").forEach((phase) => {
+    if (phase.classList.contains("current")) {
+      phase.dataset.defaultStatus = "current";
+    }
+
+    const checkbox = phase.querySelector(".roadmap-task-checkbox");
+    const button = phase.querySelector(".roadmap-task-btn");
+    if (!checkbox) return;
+
+    updateRoadmapPhaseState(phase, checkbox.checked || phase.classList.contains("complete"));
+
+    checkbox.addEventListener("change", () => {
+      updateRoadmapPhaseState(phase, checkbox.checked);
+    });
+
+    if (button) {
+      button.addEventListener("click", () => {
+        updateRoadmapPhaseState(phase, !checkbox.checked);
+      });
+    }
+  });
+}
+
 careerForm.addEventListener("submit", (e) => {
   e.preventDefault();
   careerForm.classList.add("submitted");
@@ -335,6 +378,20 @@ roadmapAutofillBtn.addEventListener("click", () => {
   roadmapForm.querySelector("#notes").value = roadmapDummyData.notes;
 });
 
+setupRoadmapTaskInteractions();
+
+document.addEventListener("click", (e) => {
+  const button = e.target.closest(".create-roadmap-btn");
+  if (!button) return;
+
+  const careerTitle = button.dataset.careerTitle || "";
+  const roadmapTab = document.querySelector(".tab[href='#roadmap']");
+  if (careerTitle) {
+    roadmapForm.querySelector("#career_topic").value = careerTitle;
+  }
+  if (roadmapTab) roadmapTab.click();
+});
+
 // Generate Mock Recommendations
 function generateMockRecommendations(data) {
   const mockRecommendations = [
@@ -381,6 +438,9 @@ function createRecommendationCard(rec) {
       <p>${rec.description}</p>
       <p><strong>Why this fits you:</strong> ${rec.reasoning}</p>
       <span class="match-score">${rec.matchScore} Match</span>
+      <button type="button" class="create-roadmap-btn" data-career-title="${rec.title}">
+        Create Roadmap
+      </button>
     </div>
   `;
 }

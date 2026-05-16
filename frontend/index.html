@@ -198,6 +198,12 @@
                   <li class="chip">Conversion Rate Optimization</li>
                 </ul>
               </div>
+              <button
+                type="button"
+                class="create-roadmap-btn"
+                data-career-title="Product Growth Lead">
+                Create Roadmap
+              </button>
             </div>
 
             <div class="card">
@@ -221,6 +227,12 @@
                   <li class="chip">Conversion Rate Optimization</li>
                 </ul>
               </div>
+              <button
+                type="button"
+                class="create-roadmap-btn"
+                data-career-title="Product Growth Lead">
+                Create Roadmap
+              </button>
             </div>
             <!-- put 2 more here -->
           </div>
@@ -314,10 +326,141 @@
         </form>
 
         <!-- Roadmap Output -->
-        <div id="roadmap-output" class="output-section" style="display: none">
-          <h3>Your Learning Roadmap</h3>
-          <div id="roadmap-steps">
-            <!-- todo: Roadmap steps will be inserted here -->
+        <div id="roadmap-output" class="output-section">
+          <h2 class="response-heading">Your Learning Roadmap</h2>
+          <p class="output-paragraph">
+            This roadmap is tailored to your current level and selected timeline.
+          </p>
+
+          <div class="roadmap-header-bar">
+            <h3 class="career-path">
+              Target Path: <span id="roadmap-target-role">Backend Developer</span>
+            </h3>
+            <div class="roadmap-meta-chips">
+              <span class="chip job-type" id="roadmap-timeline-chip">12 months</span>
+              <span class="chip" id="roadmap-level-chip">Current: Some Knowledge</span>
+            </div>
+          </div>
+
+          <div class="roadmap-now-section">
+            <h3>What to do right now</h3>
+            <div id="roadmap-immediate-steps" class="roadmap-now-grid">
+              <article class="roadmap-now-item">
+                <div class="roadmap-now-index">1</div>
+                <h4>API Fundamentals Sprint</h4>
+                <p>Practice REST design, HTTP status codes, and request validation.</p>
+              </article>
+              <article class="roadmap-now-item">
+                <div class="roadmap-now-index">2</div>
+                <h4>Database Query Practice</h4>
+                <p>Write joins, aggregates, and indexing exercises on real datasets.</p>
+              </article>
+              <article class="roadmap-now-item">
+                <div class="roadmap-now-index">3</div>
+                <h4>Mini Portfolio Backend</h4>
+                <p>Ship one CRUD API project with auth and clean documentation.</p>
+              </article>
+            </div>
+          </div>
+
+          <div id="roadmap-steps" class="roadmap-timeline">
+            <article class="roadmap-phase complete">
+              <div class="roadmap-phase-marker">✓</div>
+              <div class="roadmap-phase-content">
+                <div class="roadmap-phase-head">
+                  <h4>Phase 1: Backend Foundations</h4>
+                  <div class="roadmap-phase-chips">
+                    <span class="chip">Completed</span>
+                    <span class="chip">2 months</span>
+                  </div>
+                </div>
+                <p>
+                  Completed core Python, FastAPI basics, and clean API structure.
+                </p>
+                <div class="roadmap-phase-actions">
+                  <label class="roadmap-check-label">
+                    <input
+                      type="checkbox"
+                      class="roadmap-task-checkbox"
+                      checked />
+                    Mark task as done
+                  </label>
+                  <button type="button" class="roadmap-task-btn">Completed</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="roadmap-phase current">
+              <div class="roadmap-phase-marker"></div>
+              <div class="roadmap-phase-content">
+                <div class="roadmap-phase-head">
+                  <h4>Phase 2: Data & Service Integration</h4>
+                  <div class="roadmap-phase-chips">
+                    <span class="chip job-type">In Progress</span>
+                    <span class="chip">3 months</span>
+                  </div>
+                </div>
+                <p>
+                  Build strong SQL habits, connect APIs to database models, and improve
+                  backend reliability with proper validation and error design.
+                </p>
+                <div class="roadmap-phase-actions">
+                  <label class="roadmap-check-label">
+                    <input type="checkbox" class="roadmap-task-checkbox" />
+                    Mark task as done
+                  </label>
+                  <button type="button" class="roadmap-task-btn">Mark as done</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="roadmap-phase">
+              <div class="roadmap-phase-marker"></div>
+              <div class="roadmap-phase-content">
+                <div class="roadmap-phase-head">
+                  <h4>Phase 3: Advanced API Patterns</h4>
+                  <div class="roadmap-phase-chips">
+                    <span class="chip">Planned</span>
+                    <span class="chip">3 months</span>
+                  </div>
+                </div>
+                <p>
+                  Add authentication, background jobs, pagination, and performance-focused
+                  query design.
+                </p>
+                <div class="roadmap-phase-actions">
+                  <label class="roadmap-check-label">
+                    <input type="checkbox" class="roadmap-task-checkbox" />
+                    Mark task as done
+                  </label>
+                  <button type="button" class="roadmap-task-btn">Mark as done</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="roadmap-phase">
+              <div class="roadmap-phase-marker"></div>
+              <div class="roadmap-phase-content">
+                <div class="roadmap-phase-head">
+                  <h4>Phase 4: Production Projects & Deployment</h4>
+                  <div class="roadmap-phase-chips">
+                    <span class="chip">Planned</span>
+                    <span class="chip">4 months</span>
+                  </div>
+                </div>
+                <p>
+                  Deliver polished backend portfolio projects, deploy them, and document
+                  architecture decisions for interviews.
+                </p>
+                <div class="roadmap-phase-actions">
+                  <label class="roadmap-check-label">
+                    <input type="checkbox" class="roadmap-task-checkbox" />
+                    Mark task as done
+                  </label>
+                  <button type="button" class="roadmap-task-btn">Mark as done</button>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
