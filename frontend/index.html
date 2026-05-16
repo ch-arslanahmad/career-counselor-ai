@@ -32,144 +32,215 @@
 
       <!-- Tab 1: Career Recommendation -->
       <section id="career" class="tab-content active">
-        <div class="section-header">
-          <h2>Career Recommendation</h2>
-          <p>Tell us about yourself to get personalized career suggestions</p>
-        </div>
+        <div class="input-section">
+          <div class="section-header">
+            <h2>Career Recommendation</h2>
+            <p>Tell us about yourself to get personalized career suggestions</p>
+          </div>
 
-        <form id="career-form">
-          <!-- Name -->
-          <fieldset class="field">
-            <legend>Name <span class="required">*</span></legend>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Your Name"
-              required />
-          </fieldset>
-
-          <!-- Interests - Chip Selector -->
-          <fieldset class="field">
-            <legend>Interests <span class="required">*</span></legend>
-            <div class="chips" id="interests-chips">
-              <!-- data dynamically filled -->
-
-              <!-- todo: add another chip for others if selected adds a new required text-input -->
-            </div>
-            <div class="chip-input-wrapper">
+          <form id="career-form">
+            <!-- Name -->
+            <fieldset class="field">
+              <legend>Name <span class="required">*</span></legend>
               <input
-                class="show"
                 type="text"
-                id="interest"
-                placeholder="e.g., Web Development, Farming" />
-            </div>
-          </fieldset>
+                id="name"
+                name="name"
+                placeholder="Your Name"
+                required />
+            </fieldset>
 
-          <!-- Skills - Chip Selector -->
-          <fieldset class="field">
-            <legend>Skills <span class="required">*</span></legend>
-            <p class="help">Select your skills</p>
-            <div class="chips" id="skills-chips">
-              <!-- data dynamically filled -->
-            </div>
+            <!-- Interests - Chip Selector -->
+            <fieldset class="field">
+              <legend>Interests <span class="required">*</span></legend>
+              <div class="chips" id="interests-chips">
+                <!-- data dynamically filled -->
 
-            <div class="chip-input-wrapper">
-              <input
-                class="show"
-                type="text"
-                id="skill"
-                placeholder="e.g., JavaScript, Python" />
-            </div>
-          </fieldset>
+                <!-- todo: add another chip for others if selected adds a new required text-input -->
+              </div>
+              <div class="chip-input-wrapper">
+                <input
+                  class="show"
+                  type="text"
+                  id="interest"
+                  placeholder="e.g., Web Development, Farming" />
+              </div>
+            </fieldset>
 
-          <!-- Education Level -->
-          <fieldset class="field">
-            <legend>Education Level <span class="required">*</span></legend>
-            <select id="education_level" name="education_level" required>
-              <option value="">Select your education level</option>
-              <option value="high_school">High School Diploma</option>
-              <option value="some_college">Some College / Associate</option>
-              <option value="bachelors">Bachelor's Degree</option>
-              <option value="masters">Master's Degree</option>
-              <option value="phd">PhD / Doctoral</option>
-              <option value="bootcamp">Coding Bootcamp</option>
-              <option value="certificate">Professional Certificate</option>
-              <option value="none">None</option>
-              <option value="other">Other</option>
-            </select>
-          </fieldset>
+            <!-- Skills - Chip Selector -->
+            <fieldset class="field">
+              <legend>Skills <span class="required">*</span></legend>
+              <p class="help">Select your skills</p>
+              <div class="chips" id="skills-chips">
+                <!-- data dynamically filled -->
+              </div>
 
-          <!-- Career Goals - Chip Selector -->
-          <fieldset class="field">
-            <legend>Career Goals <span class="required">*</span></legend>
-            <p class="help">What do you want to achieve?</p>
-            <div class="chips">
-              <select name="goals" id="goals">
-                <option value="">Select a goal</option>
-                <option value="job">Get a Job</option>
-                <option value="career_change">Change Careers</option>
-                <option value="advance">Advance in Current Field</option>
-                <option value="start_business">Start Own Business</option>
-                <option value="freelance">Work Freelance</option>
-                <option value="remote">Work Remotely</option>
-                <option value="flexible">Flexible Schedule</option>
-                <option value="higher_salary">Higher Salary</option>
-                <option value="unsure">Unsure</option>
+              <div class="chip-input-wrapper">
+                <input
+                  class="show"
+                  type="text"
+                  id="skill"
+                  placeholder="e.g., JavaScript, Python" />
+              </div>
+            </fieldset>
+
+            <!-- Education Level -->
+            <fieldset class="field">
+              <legend>Education Level <span class="required">*</span></legend>
+              <select id="education_level" name="education_level" required>
+                <option value="">Select your education level</option>
+                <option value="high_school">High School Diploma</option>
+                <option value="some_college">Some College / Associate</option>
+                <option value="bachelors">Bachelor's Degree</option>
+                <option value="masters">Master's Degree</option>
+                <option value="phd">PhD / Doctoral</option>
+                <option value="bootcamp">Coding Bootcamp</option>
+                <option value="certificate">Professional Certificate</option>
+                <option value="none">None</option>
+                <option value="other">Other</option>
               </select>
-            </div>
-          </fieldset>
+            </fieldset>
 
-          <!-- Preferred Industry -->
-          <fieldset class="field">
-            <legend>Preferred Industry</legend>
-            <p class="help">Select all that apply</p>
-            <div class="chips" id="industries-chips">
-              <!-- todo: add data dynamically via JS -->
-            </div>
-            <div class="chip-input-wrapper">
-              <input
-                class="show"
-                type="text"
-                id="industry"
-                placeholder="e.g., Physics, Farming" />
-            </div>
-          </fieldset>
+            <!-- Career Goals - Chip Selector -->
+            <fieldset class="field">
+              <legend>Career Goals <span class="required">*</span></legend>
+              <p class="help">What do you want to achieve?</p>
+              <div class="chips">
+                <select name="goals" id="goals">
+                  <option value="">Select a goal</option>
+                  <option value="job">Get a Job</option>
+                  <option value="career_change">Change Careers</option>
+                  <option value="advance">Advance in Current Field</option>
+                  <option value="start_business">Start Own Business</option>
+                  <option value="freelance">Work Freelance</option>
+                  <option value="remote">Work Remotely</option>
+                  <option value="flexible">Flexible Schedule</option>
+                  <option value="higher_salary">Higher Salary</option>
+                  <option value="unsure">Unsure</option>
+                </select>
+              </div>
+            </fieldset>
 
-          <!-- Preferred Location -->
-          <fieldset class="field">
-            <legend>Preferred Location</legend>
-            <p class="help">used for personalization only</p>
-            <select name="location" id="location">
-              <option value="select-country">Select country</option>
-            </select>
-          </fieldset>
+            <!-- Preferred Industry -->
+            <fieldset class="field">
+              <legend>Preferred Industry</legend>
+              <p class="help">Select all that apply</p>
+              <div class="chips" id="industries-chips">
+                <!-- todo: add data dynamically via JS -->
+              </div>
+              <div class="chip-input-wrapper">
+                <input
+                  class="show"
+                  type="text"
+                  id="industry"
+                  placeholder="e.g., Physics, Farming" />
+              </div>
+            </fieldset>
 
-          <!-- Additional Notes -->
-          <fieldset class="field">
-            <legend>Additional Notes</legend>
-            <textarea
-              id="notes"
-              name="notes"
-              rows="3"
-              placeholder="Anything else you'd like us to know?"></textarea>
-          </fieldset>
+            <!-- Preferred Location -->
+            <fieldset class="field">
+              <legend>Preferred Location</legend>
+              <p class="help">used for personalization only</p>
+              <select name="location" id="location">
+                <option value="select-country">Select country</option>
+              </select>
+            </fieldset>
 
-          <!-- Submit -->
-          <fieldset class="field">
-            <button class="dummy-button" type="button" id="career-autofill-btn">
-              Auto-fill Dummy Data
-            </button>
-            <button type="submit">Get Recommendations</button>
-          </fieldset>
-        </form>
+            <!-- Additional Notes -->
+            <fieldset class="field">
+              <legend>Additional Notes</legend>
+              <textarea
+                id="notes"
+                name="notes"
+                rows="3"
+                placeholder="Anything else you'd like us to know?"></textarea>
+            </fieldset>
 
+            <!-- Submit -->
+            <fieldset class="field">
+              <button
+                class="dummy-button"
+                type="button"
+                id="career-autofill-btn">
+                Auto-fill Dummy Data
+              </button>
+              <button type="submit">Get Recommendations</button>
+            </fieldset>
+          </form>
+        </div>
         <!-- Career Output -->
-        <div id="career-output" class="output-section" style="display: none">
-          <h3>Your Career Recommendations</h3>
-          <div id="career-cards">
-            <!-- todo: Career cards will be inserted here -->
-            <!-- todo: use the bento grid if applicable -->
+        <div id="career-output" class="output-section">
+          <h2 class="response-heading">Your Career Matches</h2>
+          <p class="output-paragraph">
+            Based on your skill profile, interests, and professional history,
+            we've identified high-growth opportunities that align with your
+            trajectory.
+          </p>
+          <div class="card-list" id="career-cards">
+            <div class="card">
+              <div class="match chip">% Match</div>
+
+              <h3 class="career-path">Product Growth Lead</h3>
+
+              <div class="chip job-type">OPEN</div>
+
+              <p class="career-description">
+                Spearhead product growth initiatives, leveraging data-driven
+                strategies to optimize user acquisition and retention.
+              </p>
+
+              <div class="required-skills">
+                <h5>Required Skills:</h5>
+                <ul class="chips-list">
+                  <li class="chip">Growth Hacking</li>
+                  <li class="chip">Data Analysis</li>
+                  <li class="chip">SEO & SEM</li>
+                  <li class="chip">Conversion Rate Optimization</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="match chip">% Match</div>
+
+              <h3 class="career-path">Product Growth Lead</h3>
+
+              <div class="chip job-type">OPEN</div>
+
+              <p class="career-description">
+                Spearhead product growth initiatives, leveraging data-driven
+                strategies to optimize user acquisition and retention.
+              </p>
+
+              <div class="required-skills">
+                <h5>Required Skills:</h5>
+                <ul class="chips-list">
+                  <li class="chip">Growth Hacking</li>
+                  <li class="chip">Data Analysis</li>
+                  <li class="chip">SEO & SEM</li>
+                  <li class="chip">Conversion Rate Optimization</li>
+                </ul>
+              </div>
+            </div>
+            <!-- put 2 more here -->
+          </div>
+
+          <!-- skill gap analysis (if applicable) -->
+          <div id="skill-gaps" class="skill-gaps-section card">
+            <h3>Precision Match: Technical Product Manager</h3>
+            <p>
+              Our AI detected a strong correlation between your recent 'Data
+              Visualization' project and high-tier roles in Fintech operations.
+              You are only 3 skills away from a 98% match.
+            </p>
+            <div class="buttons">
+              <button type="submit" class="analyze-button">
+                Analyze Skills
+              </button>
+              <button type="submit" class="hide-recommendation bordered-button">
+                Hide Recommendation
+              </button>
+            </div>
           </div>
         </div>
       </section>

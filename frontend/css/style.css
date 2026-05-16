@@ -18,9 +18,34 @@
   --color-error-bg: #fff0f0;
 
   /* Fonts */
-  --font-mono:
-    "JetBrains Mono", monospace; /* ma
+  --font-mono: "JetBrains Mono", monospace;
   --font-serif: "Times New Roman", serif;
+
+  /* Typography Scale */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-md: 1.125rem; /* 18px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.5rem; /* 24px */
+  --text-2xl: 1.875rem; /* 30px */
+  --text-3xl: 2.25rem; /* 36px */
+  --text-4xl: 3rem; /* 48px */
+  --text-5xl: 3.75rem; /* 60px */
+
+  /* Semantic Mappings */
+  --font-size-base: var(--text-md); /* 18px */
+  --font-size-h1: var(--text-5xl); /* 60px */
+  --font-size-h2: var(--text-4xl); /* 48px */
+  --font-size-h3: var(--text-3xl); /* 36px */
+  --font-size-h4: var(--text-2xl); /* 30px */
+  --font-size-h5: var(--text-xl); /* 24px */
+  --font-size-h6: var(--text-lg); /* 20px */
+  --font-size-p: var(--text-base); /* 16px */
+  --font-size-input: var(--text-base);
+  --font-size-btn: var(--text-md);
+  --font-size-chip: var(--text-sm); /* 14px */
+  --font-size-help: var(--text-sm);
 
   /* Spacing */
   --space-sm: 8px;
@@ -53,21 +78,30 @@ body {
   font-family: var(--font-mono);
   color: var(--color-text);
   background-color: var(--color-bg);
-  font-size: 18px;
+  font-size: var(--font-size-base);
   line-height: 1.7;
   padding: var(--space-xl);
 }
 
 h1 {
-  font-size: 3.5em;
+  font-size: var(--font-size-h1);
   text-align: center;
   margin: 20px 0 10px;
 }
 h2 {
-  font-size: 2.2em;
+  font-size: var(--font-size-h2);
 }
 h3 {
-  font-size: 1.6em;
+  font-size: var(--font-size-h3);
+}
+h4 {
+  font-size: var(--font-size-h4);
+}
+h5 {
+  font-size: var(--font-size-h5);
+}
+h6 {
+  font-size: var(--font-size-h6);
 }
 
 h1,
@@ -81,12 +115,13 @@ pre,
 .tab {
   font-family: var(--font-serif);
   color: var(--color-heading);
+  font-weight: 700; /* Force bold for Serif to compete with Mono */
 }
 
 p {
   text-align: center;
   color: var(--color-muted);
-  font-size: 1em;
+  font-size: var(--font-size-p);
   margin-bottom: 20px;
 }
 
@@ -117,7 +152,7 @@ fieldset {
 }
 
 legend {
-  font-size: 1em;
+  font-size: var(--text-base);
   font-weight: bolder;
   margin-top: 10px;
   margin-bottom: 8px;
@@ -142,7 +177,7 @@ header {
   padding: 12px 24px;
   border-radius: var(--radius-full);
   color: var(--color-white);
-  font-size: 1em;
+  font-size: var(--text-base);
   font-weight: 600;
   position: relative;
   z-index: 1;
@@ -179,8 +214,7 @@ header {
 main {
   padding: 0 var(--space-xl);
   color: black;
-  max-width: 800px;
-  margin: 0 auto;
+  /* max-width: 800px; */
 }
 
 .tab-content {
@@ -190,6 +224,11 @@ main {
 
 .tab-content.active {
   display: block;
+}
+
+.input-section {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -203,7 +242,7 @@ textarea {
   width: 100%;
   padding: 12px 16px;
   font-family: var(--font-mono);
-  font-size: 0.95em;
+  font-size: var(--font-size-input);
   border: 2px solid var(--color-border-input);
   border-radius: var(--radius-md);
   background: var(--color-white);
@@ -225,11 +264,10 @@ form.submitted textarea:invalid {
 
 button[type="submit"],
 button.dummy-button {
-  width: 100%;
   padding: 14px 28px;
   margin-bottom: 10px;
   font-family: var(--font-mono);
-  font-size: 1.1em;
+  font-size: var(--font-size-btn);
   font-weight: 600;
   background: var(--color-primary);
   color: var(--color-white);
@@ -237,6 +275,17 @@ button.dummy-button {
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+button.bordered-button {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+div.buttons button.bordered-button:hover {
+  outline: none;
+  background: transparent;
 }
 
 button[type="submit"]:focus,
@@ -247,7 +296,7 @@ button.dummy-button:focus {
 button[type="submit"]:hover,
 button.dummy-button:hover {
   background: var(--color-primary-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* Chip Selector */
@@ -258,17 +307,18 @@ button.dummy-button:hover {
 }
 
 .chip {
-  padding: 10px 18px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   border: 2px solid var(--color-border);
   background: var(--color-white);
   font-family: var(--font-mono);
-  font-size: 0.9em;
+  font-size: var(--font-size-chip);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.chip:hover {
+.chip:hover,
+.chip.job-type {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
 }
@@ -295,8 +345,81 @@ button.dummy-button:hover {
 }
 
 .help {
-  font-size: 0.8em;
+  font-size: var(--font-size-help);
   color: var(--color-subtle);
   text-align: left;
   margin-bottom: var(--space-sm);
+}
+
+/* Output Sections */
+
+/* Career Recommendation Cards */
+
+.output-section {
+  margin: var(--space-xl);
+  display: grid;
+}
+
+.output-section p {
+  text-align: left;
+  margin-bottom: var(--space-lg);
+}
+
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  margin-bottom: var(--space-lg);
+  gap: 20px;
+}
+
+.card {
+  background-color: white;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+}
+
+li {
+  list-style-type: none;
+  list-style-position: inside;
+}
+
+.chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--space-sm);
+}
+
+.match.chip {
+  display: inline;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  margin-bottom: 10px;
+  border: none;
+}
+
+.chip {
+  display: inline;
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+}
+
+.chip.job-type {
+  padding: 3px 10px;
+}
+
+.career-description {
+  text-align: left;
+  font-size: var(--font-size-p);
+  color: var(--color-muted);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: var(--space-lg);
 }
