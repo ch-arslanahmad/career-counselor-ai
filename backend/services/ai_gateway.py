@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import urllib.error
@@ -366,38 +367,71 @@ def _loads_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-def generate_json(system_prompt: str, user_payload: dict[str, Any], fallback: dict[str, Any]) -> dict[str, Any]:
-    providers = _get_all_available_providers()
-    if not providers:
-        return {**fallback, "ai_provider": "none", "ai_used": False, "ai_error": "No AI providers configured"}
+async def _call_single_provider(
+    config: AIProviderConfig, system_prompt: str, user_prompt: str, fallback: dict[str, Any]
+) -> tuple[dict[str, Any] | None, str]:
+    """Call a single provider asynchronously. Returns (result, provider_id) or (None, provider_id) on failure."""
+    try:
+        if config.provider_type == "openai":
+            text = _call_openai_responses(config, system_prompt, user_prompt)
+        elif config.provider_type in {"openai-compat", "google"}:
+            text = _call_openai_compatible(config, system_prompt, user_prompt)
+        elif config.provider_type == "anthropic":
+            text = _call_anthropic_compatible(config, system_prompt, user_prompt)
+        else:
+            raise AIGatewayError(f"Unsupported AI provider type: {config.provider_type}")
 
+        parsed = _loads_json_object(text)
+        result = {**fallback, **parsed}
+        result.setdefault("ai_provider", config.provider_id)
+        result.setdefault("ai_model", config.model)
+        result["ai_used"] = True
+        return (result, config.provider_id)
+
+    except Exception:
+        return (None, config.provider_id)
+
+
+async def _generate_json_parallel(
+    system_prompt: str, user_payload: dict[str, Any], fallback: dict[str, Any], providers: list[AIProviderConfig]
+) -> dict[str, Any]:
+    """Call all providers in parallel, return first success."""
     user_prompt = (
         "Return only valid JSON. Use this input payload:\n"
         f"{json.dumps(user_payload, ensure_ascii=True, indent=2)}"
     )
 
-    errors = []
+    if not providers:
+        return {**fallback, "ai_provider": "none", "ai_used": False, "ai_error": "No AI providers configured"}
 
-    for config in providers:
-        try:
-            if config.provider_type == "openai":
-                text = _call_openai_responses(config, system_prompt, user_prompt)
-            elif config.provider_type in {"openai-compat", "google"}:
-                text = _call_openai_compatible(config, system_prompt, user_prompt)
-            elif config.provider_type == "anthropic":
-                text = _call_anthropic_compatible(config, system_prompt, user_prompt)
-            else:
-                raise AIGatewayError(f"Unsupported AI provider type: {config.provider_type}")
+    # Create tasks for all providers
+    tasks = [asyncio.create_task(_call_single_provider(config, system_prompt, user_prompt, fallback))
+             for config in providers]
 
-            parsed = _loads_json_object(text)
-            result = {**fallback, **parsed}
-            result.setdefault("ai_provider", config.provider_id)
-            result.setdefault("ai_model", config.model)
-            result["ai_used"] = True
-            return result
+    # Wait for first successful result
+    pending = set(tasks)
+    while pending:
+        done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
 
-        except Exception as exc:
-            errors.append(f"{config.provider_id}: {exc}")
-            continue
+        for task in done:
+            result, provider_id = await task
+            if result is not None:
+                # Cancel remaining tasks
+                for remaining_task in pending:
+                    remaining_task.cancel()
+                return result
 
-    return {**fallback, "ai_provider": "all_failed", "ai_used": False, "ai_error": "; ".join(errors)}
+    # All providers failed - gather all results to provide error details
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    return {**fallback, "ai_provider": "all_failed", "ai_used": False, "ai_error": "All AI providers failed"}
+
+
+def generate_json(system_prompt: str, user_payload: dict[str, Any], fallback: dict[str, Any]) -> dict[str, Any]:
+    """Generate JSON by calling AI providers in parallel."""
+    providers = _get_all_available_providers()
+
+    # Run async function synchronously
+    try:
+        return asyncio.run(_generate_json_parallel(system_prompt, user_payload, fallback, providers))
+    except Exception as exc:
+        return {**fallback, "ai_provider": "error", "ai_used": False, "ai_error": f"Parallel call failed: {exc}"}
