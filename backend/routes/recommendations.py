@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import os
-from collections.abc import Sequence
 from uuid import uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from dummy_data import CAREER_RECOMMENDATION_FIXTURES, ROADMAP_FIXTURES
 from services.ai_gateway import generate_json, get_ai_status
 
 router = APIRouter(tags=["recommendations"])
@@ -42,202 +39,72 @@ class AITestRequest(BaseModel):
     context: str = "lorem ipsum"
 
 
-def _normalize(values: Sequence[str] | None) -> set[str]:
-    return {value.strip().lower() for value in values or [] if value and value.strip()}
-
-
-def _score_career(fixture: dict, request: CareerAssessRequest) -> dict:
-    required_skills = fixture.get("required_skills", [])
-    request_skills = _normalize(request.skills) | _normalize(request.interests) | _normalize(request.career_goals)
-    required_normalized = [skill.lower() for skill in required_skills]
-
-    matches = [skill for skill in required_normalized if skill in request_skills]
-    match_count = len(matches)
-    total = len(required_normalized)
-    skill_match = round(match_count / total, 2) if total else 0.0
-
-    base = 15
-    skill_weight = int(skill_match * 70)
-    education_bonus = 8 if request.education_level else 0
-    fit_score = min(99, base + skill_weight + education_bonus)
-
-    matched_skills_display = [
-        required_skills[i] for i, s in enumerate(required_normalized) if s in request_skills
-    ]
-    missing = [
-        required_skills[i] for i, s in enumerate(required_normalized) if s not in request_skills
-    ]
-
-    if match_count == total:
-        reasoning = (
-            f"You already have all {total} core skills for this role. "
-            f"Your background in {request.education_level or 'this area'} aligns well. "
-            f"Focus on building real projects to strengthen your application."
-        )
-    elif match_count >= total / 2:
-        reasoning = (
-            f"Strong foundation — you match {match_count} of {total} required skills. "
-            f"Closing the remaining gaps ({', '.join(missing[:3])}) "
-            f"will make you a competitive candidate."
-        )
-    else:
-        reasoning = (
-            f"You match {match_count} of {total} key skills for this path. "
-            f"Start with: {', '.join(missing[:3])}. "
-            f"These are the highest-impact areas to learn first."
-        )
-
-    return {
-        "career_id": fixture["id"],
-        "career_name": fixture["name"],
-        "fit_score": fit_score,
-        "skill_match": skill_match,
-        "matched_skills": matched_skills_display,
-        "missing_skills": missing,
-        "reasoning": reasoning,
-        "growth_outlook": fixture["growth_outlook"],
-        "type": fixture["type"],
-        "category": fixture["category"],
-        "education_requirement": fixture["education_requirement"],
-    }
-
-
-def _coerce_string_list(value, fallback: list[str]) -> list[str]:
-    if not isinstance(value, list):
-        return fallback
-    return [str(item) for item in value if str(item).strip()] or fallback
-
-
 def _model_data(model: BaseModel) -> dict:
     if hasattr(model, "model_dump"):
         return model.model_dump()
     return model.dict()
 
 
-def _apply_ai_assessment(base_payload: dict, request: CareerAssessRequest) -> dict:
-    if os.getenv("AI_ASSESSMENT_ENABLED", "false").strip().lower() not in {"1", "true", "yes"}:
-        base_payload["ai_used"] = False
-        base_payload["ai_provider"] = "disabled_for_assessment"
-        return base_payload
-
-    system_prompt = (
-        "You are the AI reasoning layer for a student career counselor app. "
-        "Improve the explanation text for already-scored career matches without changing IDs or scores. "
-        "Return JSON with career_fits, top_3_careers, and immediate_next_steps."
-    )
-    ai_payload = generate_json(
-        system_prompt,
-        {
-            "student_profile": _model_data(request),
-            "scored_result": base_payload,
-            "rules": [
-                "Do not invent new career IDs.",
-                "Keep fit_score and skill_match unchanged.",
-                "Make reasoning concise and useful for a student.",
-            ],
-        },
-        base_payload,
-    )
-
-    career_fits = ai_payload.get("career_fits")
-    if isinstance(career_fits, list) and career_fits:
-        base_by_id = {item["career_id"]: item for item in base_payload["career_fits"]}
-        merged = []
-        for item in career_fits:
-            career_id = item.get("career_id")
-            if career_id not in base_by_id:
-                continue
-            merged_item = {**base_by_id[career_id]}
-            if item.get("reasoning"):
-                merged_item["reasoning"] = str(item["reasoning"])
-            merged.append(merged_item)
-        if merged:
-            base_payload["career_fits"] = merged + [
-                item for item in base_payload["career_fits"] if item["career_id"] not in {entry["career_id"] for entry in merged}
-            ]
-            base_payload["top_3_careers"] = base_payload["career_fits"][:3]
-
-    base_payload["immediate_next_steps"] = _coerce_string_list(
-        ai_payload.get("immediate_next_steps"),
-        base_payload["immediate_next_steps"],
-    )[:3]
-    base_payload["ai_used"] = bool(ai_payload.get("ai_used"))
-    base_payload["ai_provider"] = ai_payload.get("ai_provider", "fallback")
-    if ai_payload.get("ai_error"):
-        base_payload["ai_error"] = ai_payload["ai_error"]
-    return base_payload
+_ASSESS_SYSTEM_PROMPT = (
+    "You are a career assessment AI. Given a student's skills, interests, education, and goals, "
+    "return a JSON object with:\n"
+    "- career_fits: array of career objects, each with:\n"
+    "    career_id (integer, sequential), career_name, fit_score (0-99 integer, based on skill match),\n"
+    "    skill_match (0.0-1.0 float), matched_skills (array of strings the student has),\n"
+    "    missing_skills (array of strings the student needs), reasoning (string),\n"
+    "    growth_outlook, type (open/regulated/degree_required), category, education_requirement\n"
+    "- top_3_careers: the 3 highest-scoring careers from career_fits\n"
+    "- immediate_next_steps: array of 3 string action items\n\n"
+    "Score formula: base=15, +skill_match_weight(up to 70), +education_bonus(8).\n"
+    "Be realistic. Don't inflate scores. Generate 8-12 careers."
+)
 
 
 @router.post("/api/assess")
 def assess_careers(payload: CareerAssessRequest):
-    career_fits = sorted(
-        (_score_career(fixture, payload) for fixture in CAREER_RECOMMENDATION_FIXTURES),
-        key=lambda item: item["fit_score"],
-        reverse=True,
+    ai_payload = generate_json(
+        _ASSESS_SYSTEM_PROMPT,
+        {"student_profile": _model_data(payload)},
+        {},
     )
-    top_3 = career_fits[:3]
 
-    immediate_next_steps = [
-        f"Study {top_3[0]['career_name']} basics and build one small project.",
-        "Strengthen the weakest required skill from the top recommendation.",
-        "Use the roadmap tab to turn the highest-fit role into a weekly plan.",
-    ]
+    if not ai_payload.get("ai_used"):
+        error_detail = ai_payload.get("ai_error", "AI generation failed with no error details.")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "Career assessment requires AI, which is currently unavailable.",
+                "reason": error_detail,
+            },
+        )
 
-    base_payload = {
+    career_fits = ai_payload.get("career_fits", [])
+    top_3 = ai_payload.get("top_3_careers", career_fits[:3])
+    next_steps = ai_payload.get("immediate_next_steps", [])
+
+    return {
         "session_id": str(uuid4()),
         "assessment_id": 1,
         "career_fits": career_fits,
-        "top_3_careers": top_3,
-        "immediate_next_steps": immediate_next_steps,
+        "top_3_careers": top_3[:3],
+        "immediate_next_steps": next_steps[:3],
+        "ai_used": True,
+        "ai_provider": ai_payload.get("ai_provider", "unknown"),
     }
-    return _apply_ai_assessment(base_payload, payload)
-
-
-def _resolve_roadmap_key(career_topic: str) -> str:
-    normalized = career_topic.strip().lower()
-    for key in ROADMAP_FIXTURES:
-        if normalized == key.lower():
-            return key
-    return "Backend Developer"
-
-
-def _resolve_career_fixture(role_name: str) -> dict:
-    normalized = role_name.strip().lower()
-    for fixture in CAREER_RECOMMENDATION_FIXTURES:
-        if fixture["name"].lower() == normalized:
-            return fixture
-    return CAREER_RECOMMENDATION_FIXTURES[0]
 
 
 @router.post("/api/roadmap")
 def build_roadmap(payload: RoadmapRequest):
-    key = _resolve_roadmap_key(payload.career_topic)
-    fixture = ROADMAP_FIXTURES.get(key)
     session_id = payload.session_id or str(uuid4())
+    topic = payload.career_topic.strip() or "the selected career"
 
-    fallback_payload = {
+    skeleton = {
         "session_id": session_id,
-        "career_id": payload.career_id or 101,
-        "career_name": fixture["career_name"] if fixture else payload.career_topic,
+        "career_id": payload.career_id,
+        "career_name": topic,
         "timeline_hours_per_week": payload.timeline_hours_per_week,
         "current_level": payload.current_level,
-        "total_duration": "12 months",
-        "what_to_do_right_now": [
-            {"title": "Research the field", "description": "Understand the core skills and job market for this career."},
-            {"title": "Build foundational skills", "description": "Start with the most commonly required entry-level skills."},
-            {"title": "Create a portfolio project", "description": "Apply what you learn in a real project you can show."},
-        ],
-        "steps": [
-            {"step_id": 1, "order": 1, "title": "Foundations", "description": "Learn the core concepts and tools.", "duration": "3 months", "resources": [], "prerequisites": []},
-            {"step_id": 2, "order": 2, "title": "Build Skills", "description": "Practice with real-world exercises and projects.", "duration": "4 months", "resources": [], "prerequisites": [1]},
-            {"step_id": 3, "order": 3, "title": "Portfolio & Apply", "description": "Create a portfolio and start applying for roles.", "duration": "5 months", "resources": [], "prerequisites": [1, 2]},
-        ],
     }
-    if fixture:
-        fallback_payload["total_duration"] = fixture["total_duration"]
-        fallback_payload["what_to_do_right_now"] = fixture["what_to_do_right_now"]
-        fallback_payload["steps"] = fixture["steps"]
-        fallback_payload["career_name"] = fixture["career_name"]
 
     system_prompt = (
         "You are an AI career roadmap generator. "
@@ -249,10 +116,21 @@ def build_roadmap(payload: RoadmapRequest):
     ai_payload = generate_json(
         system_prompt,
         {"roadmap_request": _model_data(payload)},
-        fallback_payload,
+        skeleton,
     )
 
-    result = {**fallback_payload}
+    if not ai_payload.get("ai_used"):
+        error_detail = ai_payload.get("ai_error", "AI generation failed with no error details.")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "Roadmap generation requires AI, which is currently unavailable.",
+                "reason": error_detail,
+                "session_id": session_id,
+            },
+        )
+
+    result = {**skeleton}
     if isinstance(ai_payload.get("what_to_do_right_now"), list) and ai_payload["what_to_do_right_now"]:
         result["what_to_do_right_now"] = ai_payload["what_to_do_right_now"]
     if isinstance(ai_payload.get("steps"), list) and ai_payload["steps"]:
@@ -261,91 +139,60 @@ def build_roadmap(payload: RoadmapRequest):
         result["total_duration"] = str(ai_payload["total_duration"])
     if ai_payload.get("career_name"):
         result["career_name"] = str(ai_payload["career_name"])
-    result["ai_used"] = bool(ai_payload.get("ai_used"))
-    result["ai_provider"] = ai_payload.get("ai_provider", "fallback")
-    if ai_payload.get("ai_error"):
-        result["ai_error"] = ai_payload["ai_error"]
+    result["ai_used"] = True
+    result["ai_provider"] = ai_payload.get("ai_provider", "unknown")
     return result
 
 
 @router.post("/api/skill-gap-analysis")
 def analyze_skill_gap(payload: SkillGapAnalysisRequest):
     target_role = payload.target_role.strip() or "Backend Developer"
-    target_key = _resolve_roadmap_key(target_role)
-    fixture = ROADMAP_FIXTURES[target_key]
-    career_fixture = _resolve_career_fixture(target_role)
-
-    required_skills = {skill.strip().lower() for skill in career_fixture.get("required_skills", []) if skill}
-    provided_skills = _normalize(payload.skills_data)
-
-    if not required_skills:
-        required_skills = {"python", "sql", "fastapi"}
-
-    matched = sorted(required_skills & provided_skills)
-    missing = sorted(required_skills - provided_skills)
-
-    readiness = 0.5 if not required_skills else round(len(matched) / len(required_skills), 2)
-    if payload.education:
-        readiness = min(1.0, readiness + 0.1)
-
-    recommendations = [
-        f"Focus on {missing[0]} first." if missing else "You already cover the core gap areas.",
-        f"Build a project that proves your fit for {target_key}.",
-        "Repeat the analysis after one new project or certification.",
-    ]
-
-    base_payload = {
-        "session_id": payload.session_id or str(uuid4()),
-        "target_role": target_key,
-        "gap_analysis": {
-            "matched_skills": matched,
-            "missing_skills": missing,
-            "summary": (
-                f"You match {len(matched)} of {len(required_skills)} core skills for {target_key}."
-                if required_skills
-                else f"No target-specific skills configured for {target_key}."
-            ),
-        },
-        "recommendations": recommendations,
-        "internship_readiness": readiness,
-        "target_roles": [target_key],
-        "career_name": career_fixture["name"],
-    }
 
     system_prompt = (
-        "You are the skill-gap analysis layer for a student career counselor app. "
-        "Use the provided target role, required skills, and student profile. "
-        "Return JSON with gap_analysis, recommendations, internship_readiness, target_roles, and career_name."
+        "You are a skill-gap analysis AI. Given a student's skills and a target role, "
+        "return JSON with:\n"
+        "- career_name: the target role name\n"
+        "- gap_analysis: { matched_skills: [str], missing_skills: [str], summary: str }\n"
+        "- recommendations: [str] — 3 actionable next steps\n"
+        "- internship_readiness: float 0.0-1.0\n"
+        "- target_roles: [str]\n\n"
+        "Be realistic and specific. List real skills required for the role."
     )
     ai_payload = generate_json(
         system_prompt,
-        {
-            "skill_gap_request": _model_data(payload),
-            "required_skills": sorted(required_skills),
-            "base_analysis": base_payload,
-        },
-        base_payload,
+        {"skill_gap_request": _model_data(payload), "target_role": target_role},
+        {},
     )
 
-    if isinstance(ai_payload.get("gap_analysis"), dict):
-        base_payload["gap_analysis"] = {
-            **base_payload["gap_analysis"],
-            **ai_payload["gap_analysis"],
-        }
-    base_payload["recommendations"] = _coerce_string_list(
-        ai_payload.get("recommendations"),
-        base_payload["recommendations"],
-    )
-    if isinstance(ai_payload.get("internship_readiness"), (int, float)):
-        base_payload["internship_readiness"] = max(0.0, min(1.0, float(ai_payload["internship_readiness"])))
-    base_payload["target_roles"] = _coerce_string_list(ai_payload.get("target_roles"), base_payload["target_roles"])
-    if ai_payload.get("career_name"):
-        base_payload["career_name"] = str(ai_payload["career_name"])
-    base_payload["ai_used"] = bool(ai_payload.get("ai_used"))
-    base_payload["ai_provider"] = ai_payload.get("ai_provider", "fallback")
-    if ai_payload.get("ai_error"):
-        base_payload["ai_error"] = ai_payload["ai_error"]
-    return base_payload
+    if not ai_payload.get("ai_used"):
+        error_detail = ai_payload.get("ai_error", "AI generation failed with no error details.")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "Skill-gap analysis requires AI, which is currently unavailable.",
+                "reason": error_detail,
+            },
+        )
+
+    gap_analysis = ai_payload.get("gap_analysis", {})
+    if not isinstance(gap_analysis, dict):
+        gap_analysis = {}
+
+    return {
+        "session_id": payload.session_id or str(uuid4()),
+        "target_role": target_role,
+        "career_name": ai_payload.get("career_name", target_role),
+        "gap_analysis": {
+            "matched_skills": gap_analysis.get("matched_skills", []),
+            "missing_skills": gap_analysis.get("missing_skills", []),
+            "summary": gap_analysis.get("summary", f"Analysis for {target_role}."),
+        },
+        "recommendations": ai_payload.get("recommendations", []),
+        "internship_readiness": max(0.0, min(1.0, float(ai_payload.get("internship_readiness", 0.5)))),
+        "target_roles": ai_payload.get("target_roles", [target_role]),
+        "ai_used": True,
+        "ai_provider": ai_payload.get("ai_provider", "unknown"),
+    }
 
 
 @router.get("/api/ai/status")
