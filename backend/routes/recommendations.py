@@ -212,42 +212,60 @@ def _resolve_career_fixture(role_name: str) -> dict:
 @router.post("/api/roadmap")
 def build_roadmap(payload: RoadmapRequest):
     key = _resolve_roadmap_key(payload.career_topic)
-    fixture = ROADMAP_FIXTURES[key]
+    fixture = ROADMAP_FIXTURES.get(key)
     session_id = payload.session_id or str(uuid4())
 
-    base_payload = {
+    fallback_payload = {
         "session_id": session_id,
         "career_id": payload.career_id or 101,
-        "career_name": fixture["career_name"],
+        "career_name": fixture["career_name"] if fixture else payload.career_topic,
         "timeline_hours_per_week": payload.timeline_hours_per_week,
         "current_level": payload.current_level,
-        "total_duration": fixture["total_duration"],
-        "what_to_do_right_now": fixture["what_to_do_right_now"],
-        "steps": fixture["steps"],
+        "total_duration": "12 months",
+        "what_to_do_right_now": [
+            {"title": "Research the field", "description": "Understand the core skills and job market for this career."},
+            {"title": "Build foundational skills", "description": "Start with the most commonly required entry-level skills."},
+            {"title": "Create a portfolio project", "description": "Apply what you learn in a real project you can show."},
+        ],
+        "steps": [
+            {"step_id": 1, "order": 1, "title": "Foundations", "description": "Learn the core concepts and tools.", "duration": "3 months", "resources": [], "prerequisites": []},
+            {"step_id": 2, "order": 2, "title": "Build Skills", "description": "Practice with real-world exercises and projects.", "duration": "4 months", "resources": [], "prerequisites": [1]},
+            {"step_id": 3, "order": 3, "title": "Portfolio & Apply", "description": "Create a portfolio and start applying for roles.", "duration": "5 months", "resources": [], "prerequisites": [1, 2]},
+        ],
     }
+    if fixture:
+        fallback_payload["total_duration"] = fixture["total_duration"]
+        fallback_payload["what_to_do_right_now"] = fixture["what_to_do_right_now"]
+        fallback_payload["steps"] = fixture["steps"]
+        fallback_payload["career_name"] = fixture["career_name"]
+
     system_prompt = (
-        "You are the AI roadmap layer for a career counselor app. "
-        "Personalize the supplied roadmap for the student's current level and weekly time. "
-        "Return JSON with career_name, total_duration, what_to_do_right_now, and steps. "
-        "Each step must include step_id, order, title, description, duration, resources, prerequisites."
+        "You are an AI career roadmap generator. "
+        "Generate a complete learning roadmap from scratch for the given career topic, student level, and weekly hours. "
+        "Return JSON with: career_name, total_duration, what_to_do_right_now (array of {title, description}), "
+        "and steps (array of {step_id, order, title, description, duration, resources, prerequisites}). "
+        "Make steps detailed, realistic, and ordered. Use the student's current_level and timeline_hours_per_week to adjust depth and pace."
     )
     ai_payload = generate_json(
         system_prompt,
-        {"roadmap_request": _model_data(payload), "base_roadmap": base_payload},
-        base_payload,
+        {"roadmap_request": _model_data(payload)},
+        fallback_payload,
     )
 
-    if isinstance(ai_payload.get("what_to_do_right_now"), list):
-        base_payload["what_to_do_right_now"] = ai_payload["what_to_do_right_now"]
+    result = {**fallback_payload}
+    if isinstance(ai_payload.get("what_to_do_right_now"), list) and ai_payload["what_to_do_right_now"]:
+        result["what_to_do_right_now"] = ai_payload["what_to_do_right_now"]
     if isinstance(ai_payload.get("steps"), list) and ai_payload["steps"]:
-        base_payload["steps"] = ai_payload["steps"]
+        result["steps"] = ai_payload["steps"]
     if ai_payload.get("total_duration"):
-        base_payload["total_duration"] = str(ai_payload["total_duration"])
-    base_payload["ai_used"] = bool(ai_payload.get("ai_used"))
-    base_payload["ai_provider"] = ai_payload.get("ai_provider", "fallback")
+        result["total_duration"] = str(ai_payload["total_duration"])
+    if ai_payload.get("career_name"):
+        result["career_name"] = str(ai_payload["career_name"])
+    result["ai_used"] = bool(ai_payload.get("ai_used"))
+    result["ai_provider"] = ai_payload.get("ai_provider", "fallback")
     if ai_payload.get("ai_error"):
-        base_payload["ai_error"] = ai_payload["ai_error"]
-    return base_payload
+        result["ai_error"] = ai_payload["ai_error"]
+    return result
 
 
 @router.post("/api/skill-gap-analysis")
