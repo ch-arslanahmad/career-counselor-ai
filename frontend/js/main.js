@@ -954,7 +954,7 @@ function renderCareerRecommendations(payload) {
 
       const match = document.createElement("div");
       match.className = "match chip";
-      match.textContent = `${career.fit_score}% Match`;
+      match.textContent = `${career.fit_score ?? 0}% Match`;
 
       const title = document.createElement("h3");
       title.className = "career-path";
@@ -983,16 +983,11 @@ function renderCareerRecommendations(payload) {
       matchedHeading.textContent = "Your Skills";
 
       const matchedSkills = (career.matched_skills || []).filter(Boolean);
-      const hasMatched = matchedSkills.length > 0;
-      const matchedList = createChipList(hasMatched ? matchedSkills : ["Add your skills in the form to see matches"]);
-
       const gapsHeading = document.createElement("h5");
       gapsHeading.className = "skill-heading gaps";
       gapsHeading.textContent = "Skills to Learn";
 
       const missingSkills = (career.missing_skills || []).filter(Boolean);
-      const hasGaps = missingSkills.length > 0;
-      const gapsList = createChipList(hasGaps ? missingSkills : ["Complete assessment to see required skills"]);
 
       const roadmapBtn = document.createElement("button");
       roadmapBtn.type = "button";
@@ -1001,9 +996,26 @@ function renderCareerRecommendations(payload) {
       roadmapBtn.textContent = "Create Roadmap";
 
       skillsBlock.appendChild(matchedHeading);
-      skillsBlock.appendChild(matchedList);
+      if (matchedSkills.length > 0) {
+        const matchedList = createChipList(matchedSkills);
+        skillsBlock.appendChild(matchedList);
+      } else {
+        const emptyMsg = document.createElement("p");
+        emptyMsg.className = "empty-state";
+        emptyMsg.textContent = "No skills matched yet. Add more skills to your profile.";
+        skillsBlock.appendChild(emptyMsg);
+      }
+
       skillsBlock.appendChild(gapsHeading);
-      skillsBlock.appendChild(gapsList);
+      if (missingSkills.length > 0) {
+        const gapsList = createChipList(missingSkills);
+        skillsBlock.appendChild(gapsList);
+      } else {
+        const emptyMsg = document.createElement("p");
+        emptyMsg.className = "empty-state";
+        emptyMsg.textContent = "No required skills identified.";
+        skillsBlock.appendChild(emptyMsg);
+      }
 
       card.appendChild(match);
       card.appendChild(title);
@@ -1396,8 +1408,10 @@ if (careerDemoBtn) {
     setChipSelections(careerForm.querySelector("#interests-chips"), careerDummyData.interests, careerDummyData.custom_interest);
     setChipSelections(careerForm.querySelector("#skills-chips"), careerDummyData.skills, careerDummyData.custom_skill);
     setChipSelections(careerForm.querySelector("#industries-chips"), careerDummyData.industries, careerDummyData.custom_industry);
-    if (careerOutput) careerOutput.hidden = false;
-    renderCareerRecommendations(demoCareerOutput);
+    if (careerOutput) {
+      careerOutput.classList.remove("hidden");
+      renderCareerRecommendations(demoCareerOutput);
+    }
     document.getElementById("career").scrollIntoView({ behavior: "smooth" });
   });
 }

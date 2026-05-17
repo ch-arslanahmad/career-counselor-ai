@@ -187,7 +187,6 @@ nav {
     flex-direction: column;
     background: var(--color-bg);
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 99;
   }
 
@@ -564,6 +563,14 @@ li {
 .required-skills .chips-list .chip {
   font-size: 11px;
   padding: 3px 8px;
+}
+
+.empty-state {
+  font-size: 13px;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 8px 0;
+  margin: 0;
 }
 
 .resource-chip {
