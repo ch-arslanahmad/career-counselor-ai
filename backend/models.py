@@ -42,7 +42,7 @@ if Base is not None:
         )
         growth_outlook: Mapped[str | None] = mapped_column(String(100), nullable=True)
         source: Mapped[str | None] = mapped_column(
-            Enum("onet", "manual_pakistan", "custom", name="career_source"),
+            Enum("onet", "custom", name="career_source"),
             nullable=True,
         )
         education_requirement: Mapped[str | None] = mapped_column(String(200), nullable=True)
