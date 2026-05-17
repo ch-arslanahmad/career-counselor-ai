@@ -259,6 +259,12 @@ const careerForm = document.getElementById("career-form");
 const roadmapForm = document.getElementById("roadmap-form");
 const careerAutofillBtn = document.getElementById("career-autofill-btn");
 const roadmapAutofillBtn = document.getElementById("roadmap-autofill-btn");
+const roadmapCustomTaskInput = document.getElementById("roadmap-custom-task-input");
+const roadmapAddTaskBtn = document.getElementById("roadmap-add-task-btn");
+const roadmapCustomTaskList = document.getElementById("roadmap-custom-task-list");
+const skillsModal = document.getElementById("skills-modal");
+const openSkillsModalBtn = document.getElementById("open-skills-modal");
+const modalReanalyzeBtn = document.getElementById("modal-reanalyze");
 
 const careerDummyData = {
   name: "Arslan Ahmad",
@@ -281,23 +287,22 @@ const roadmapDummyData = {
   notes: "Focus on FastAPI, SQL, and deployment.",
 };
 
-function updateRoadmapPhaseState(phase, isComplete) {
-  const checkbox = phase.querySelector(".roadmap-task-checkbox");
-  const button = phase.querySelector(".roadmap-task-btn");
+function updateRoadmapPhaseState(phase) {
+  const checkboxes = Array.from(phase.querySelectorAll(".roadmap-task-checkbox"));
+  const allChecked = checkboxes.length > 0 && checkboxes.every((checkbox) => checkbox.checked);
 
-  phase.classList.toggle("complete", isComplete);
+  phase.classList.toggle("complete", allChecked);
 
-  if (isComplete) {
+  if (allChecked) {
     phase.classList.remove("current");
   } else if (phase.dataset.defaultStatus === "current") {
     phase.classList.add("current");
   }
 
-  if (checkbox) checkbox.checked = isComplete;
-
-  if (button) {
-    button.textContent = isComplete ? "Completed" : "Mark as done";
-  }
+  checkboxes.forEach((checkbox) => {
+    const label = checkbox.closest(".roadmap-task-label");
+    if (label) label.classList.toggle("is-checked", checkbox.checked);
+  });
 }
 
 function setupRoadmapTaskInteractions() {
@@ -306,23 +311,105 @@ function setupRoadmapTaskInteractions() {
       phase.dataset.defaultStatus = "current";
     }
 
-    const checkbox = phase.querySelector(".roadmap-task-checkbox");
-    const button = phase.querySelector(".roadmap-task-btn");
-    if (!checkbox) return;
+    const checkboxes = phase.querySelectorAll(".roadmap-task-checkbox");
+    if (!checkboxes.length) return;
 
-    updateRoadmapPhaseState(phase, checkbox.checked || phase.classList.contains("complete"));
+    updateRoadmapPhaseState(phase);
 
-    checkbox.addEventListener("change", () => {
-      updateRoadmapPhaseState(phase, checkbox.checked);
-    });
-
-    if (button) {
-      button.addEventListener("click", () => {
-        updateRoadmapPhaseState(phase, !checkbox.checked);
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
+        updateRoadmapPhaseState(phase);
       });
+    });
+  });
+}
+
+function createRoadmapTaskItem(taskText, checked = false) {
+  const item = document.createElement("li");
+  item.className = "roadmap-task-item";
+
+  const label = document.createElement("label");
+  label.className = "roadmap-task-label";
+  if (checked) label.classList.add("is-checked");
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "roadmap-task-checkbox";
+  checkbox.checked = checked;
+
+  const text = document.createElement("span");
+  text.className = "roadmap-task-text";
+  text.textContent = taskText;
+
+  label.appendChild(checkbox);
+  label.appendChild(text);
+  item.appendChild(label);
+
+  return item;
+}
+
+function setupCustomChecklist() {
+  if (!roadmapCustomTaskInput || !roadmapAddTaskBtn || !roadmapCustomTaskList) return;
+
+  const addItem = () => {
+    const taskText = roadmapCustomTaskInput.value.trim();
+    if (!taskText) return;
+    roadmapCustomTaskList.appendChild(createRoadmapTaskItem(taskText));
+    roadmapCustomTaskInput.value = "";
+    roadmapCustomTaskInput.focus();
+  };
+
+  roadmapAddTaskBtn.addEventListener("click", addItem);
+  roadmapCustomTaskInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addItem();
+    }
+  });
+
+  roadmapCustomTaskList.addEventListener("change", (e) => {
+    const checkbox = e.target.closest(".roadmap-task-checkbox");
+    if (!checkbox) return;
+    const label = checkbox.closest(".roadmap-task-label");
+    if (label) label.classList.toggle("is-checked", checkbox.checked);
+  });
+}
+
+function openSkillsModal() {
+  if (!skillsModal) return;
+  skillsModal.hidden = false;
+  skillsModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function closeSkillsModal() {
+  if (!skillsModal) return;
+  skillsModal.hidden = true;
+  skillsModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+if (openSkillsModalBtn) {
+  openSkillsModalBtn.addEventListener("click", openSkillsModal);
+}
+
+if (modalReanalyzeBtn) {
+  modalReanalyzeBtn.addEventListener("click", openSkillsModal);
+}
+
+if (skillsModal) {
+  skillsModal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-modal-close]")) {
+      closeSkillsModal();
     }
   });
 }
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && skillsModal && !skillsModal.hidden) {
+    closeSkillsModal();
+  }
+});
 
 careerForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -379,6 +466,7 @@ roadmapAutofillBtn.addEventListener("click", () => {
 });
 
 setupRoadmapTaskInteractions();
+setupCustomChecklist();
 
 document.addEventListener("click", (e) => {
   const button = e.target.closest(".create-roadmap-btn");

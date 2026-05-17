@@ -80,11 +80,11 @@ body {
   background-color: var(--color-bg);
   font-size: var(--font-size-base);
   line-height: 1.7;
-  padding: var(--space-xl);
+  padding: clamp(12px, 2vw, 30px);
 }
 
 h1 {
-  font-size: var(--font-size-h1);
+  font-size: clamp(2.4rem, 5vw, var(--font-size-h1));
   text-align: center;
   margin: 20px 0 10px;
 }
@@ -134,12 +134,14 @@ div {
 }
 
 nav {
-  margin: 10px 0;
+  margin: 10px auto 0;
   display: flex;
   padding: 15px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: 20px;
+  width: min(100%, 1280px);
+  flex-wrap: wrap;
 }
 
 a {
@@ -162,7 +164,6 @@ legend {
 header {
   text-align: center;
   margin-bottom: var(--space-lg);
-
   border-bottom: 2px solid var(--color-border-input);
 }
 .tabs {
@@ -212,13 +213,14 @@ header {
 }
 
 main {
-  padding: 0 var(--space-xl);
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 0 clamp(8px, 2vw, 32px) var(--space-xl);
   color: black;
-  /* max-width: 800px; */
 }
 
 .tab-content {
-  padding: var(--space-xl) 20px;
+  padding: clamp(16px, 2vw, 28px) 0;
   display: none;
 }
 
@@ -263,7 +265,9 @@ form.submitted textarea:invalid {
 }
 
 button[type="submit"],
-button.dummy-button {
+button.dummy-button,
+button.analyze-button,
+button.bordered-button {
   padding: 14px 28px;
   margin-bottom: 10px;
   font-family: var(--font-mono);
@@ -281,20 +285,24 @@ button.bordered-button {
   background: transparent;
   color: var(--color-primary);
   border: 2px solid var(--color-primary);
+  transition: all 0.2s ease;
 }
 
 div.buttons button.bordered-button:hover {
   outline: none;
   background: transparent;
+  transform: translateY(-2px);
 }
 
 button[type="submit"]:focus,
-button.dummy-button:focus {
+button.dummy-button:focus,
+button.analyze-button:focus {
   outline: 2px solid var(--color-primary-dark);
 }
 
 button[type="submit"]:hover,
-button.dummy-button:hover {
+button.dummy-button:hover,
+button.analyze-button:hover {
   background: var(--color-primary-dark);
   transform: translateY(-2px);
 }
@@ -356,8 +364,10 @@ button.dummy-button:hover {
 /* Career Recommendation Cards */
 
 .output-section {
-  margin: var(--space-xl);
+  width: min(100%, 1120px);
+  margin: 0 auto var(--space-xl);
   display: grid;
+  gap: var(--space-lg);
 }
 
 .output-section p {
@@ -367,7 +377,7 @@ button.dummy-button:hover {
 
 .card-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   margin-bottom: var(--space-lg);
   gap: 20px;
 }
@@ -376,7 +386,8 @@ button.dummy-button:hover {
   background-color: white;
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  margin-bottom: var(--space-lg);
+  margin-bottom: 0;
+  box-shadow: var(--shadow-soft);
 }
 
 li {
@@ -513,6 +524,39 @@ li {
   color: var(--color-muted);
 }
 
+.roadmap-custom-checklist {
+  background: var(--color-white);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.roadmap-custom-checklist-head p {
+  margin-bottom: var(--space-md);
+}
+
+.roadmap-custom-checklist-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+#roadmap-add-task-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-chip);
+  cursor: pointer;
+}
+
+#roadmap-add-task-btn:hover {
+  background: var(--color-primary-dark);
+}
+
 .roadmap-timeline {
   display: flex;
   flex-direction: column;
@@ -584,7 +628,6 @@ li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-sm);
   margin-bottom: var(--space-sm);
 }
 
@@ -616,39 +659,231 @@ li {
   color: var(--color-muted);
 }
 
-.roadmap-phase-actions {
+.roadmap-task-list {
   margin-top: var(--space-md);
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-md);
+  flex-direction: column;
+  gap: 8px;
 }
 
-.roadmap-check-label {
+.roadmap-task-item {
+  list-style: none;
+}
+
+.roadmap-task-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--font-size-chip);
   color: var(--color-muted);
-}
-
-.roadmap-task-btn {
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-primary);
-  background: var(--color-primary);
-  color: var(--color-white);
-  font-family: var(--font-mono);
   font-size: var(--font-size-chip);
-  cursor: pointer;
 }
 
-.roadmap-task-btn:hover {
-  background: var(--color-primary-dark);
+.roadmap-task-checkbox {
+  width: 16px;
+  height: 16px;
+}
+
+.roadmap-task-label.is-checked .roadmap-task-text {
+  text-decoration: line-through;
+  opacity: 0.75;
 }
 
 .roadmap-phase.complete .roadmap-phase-content h4,
 .roadmap-phase.complete .roadmap-phase-content p {
   text-decoration: line-through;
   opacity: 0.8;
+}
+
+.hidden {
+  display: none !important;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+#career-output[hidden] {
+  display: none !important;
+}
+
+.modal[hidden] {
+  display: none !important;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--space-lg);
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 760px);
+  max-height: min(88vh, 900px);
+  overflow: auto;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(0, 106, 255, 0.14);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-heading);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal-eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: var(--color-primary-dark);
+  text-align: left;
+}
+
+.modal-panel h3 {
+  margin-bottom: 10px;
+}
+
+.modal-copy {
+  margin-bottom: var(--space-lg);
+  text-align: left;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+
+.modal-summary {
+  background: var(--color-white);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+}
+
+.modal-summary h4 {
+  margin-bottom: 8px;
+  font-size: var(--font-size-h6);
+}
+
+.modal-summary ul {
+  padding-left: 18px;
+  color: var(--color-muted);
+}
+
+.modal-summary li {
+  list-style: disc;
+  margin-bottom: 6px;
+}
+
+.modal-actions {
+  justify-content: flex-end;
+  margin-top: var(--space-lg);
+}
+
+@media (max-width: 900px) {
+  nav {
+    justify-content: center;
+  }
+
+  .tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .output-section {
+    width: 100%;
+  }
+
+  .card-list {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmap-custom-checklist-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .buttons {
+    justify-content: stretch;
+  }
+
+  .buttons button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 10px;
+  }
+
+  nav {
+    padding: 10px 0;
+  }
+
+  .logo {
+    width: 48px;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .tabs {
+    padding: 12px;
+  }
+
+  header {
+    margin-bottom: var(--space-md);
+  }
+
+  .tab-content {
+    padding: 12px 0;
+  }
+
+  .input-section,
+  .output-section {
+    width: 100%;
+  }
+
+  .roadmap-header-bar,
+  .roadmap-now-section,
+  .roadmap-custom-checklist,
+  .roadmap-phase-content,
+  .card,
+  .modal-panel {
+    border-radius: 20px;
+  }
+
+  .modal {
+    padding: 10px;
+  }
+
+  .modal-panel {
+    max-height: 92vh;
+  }
 }
