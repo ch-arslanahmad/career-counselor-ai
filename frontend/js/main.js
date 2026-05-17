@@ -298,9 +298,61 @@ const skillsModalGapList = document.getElementById("skills-modal-gap-list");
 const skillsModalStepList = document.getElementById("skills-modal-step-list");
 const openSkillsModalBtn = document.getElementById("open-skills-modal");
 const modalReanalyzeBtn = document.getElementById("modal-reanalyze");
+const errorBanner = document.getElementById("error-banner");
+const errorBannerText = document.getElementById("error-banner-text");
+const errorBannerClose = document.getElementById("error-banner-close");
+const careerSpinner = document.getElementById("career-spinner");
+const careerError = document.getElementById("career-error");
+const careerErrorText = document.getElementById("career-error-text");
+const careerRetryBtn = document.getElementById("career-retry-btn");
+const roadmapSpinner = document.getElementById("roadmap-spinner");
+const roadmapError = document.getElementById("roadmap-error");
+const roadmapErrorText = document.getElementById("roadmap-error-text");
+const roadmapRetryBtn = document.getElementById("roadmap-retry-btn");
 let latestCareerAssessment = null;
 let latestCareerSubmission = null;
 let latestSkillGapAnalysis = null;
+
+function showErrorBanner(message) {
+  if (!errorBanner || !errorBannerText) return;
+  errorBannerText.textContent = message;
+  errorBanner.hidden = false;
+}
+
+function hideErrorBanner() {
+  if (!errorBanner) return;
+  errorBanner.hidden = true;
+}
+
+if (errorBannerClose) {
+  errorBannerClose.addEventListener("click", hideErrorBanner);
+}
+
+function showInlineError(container, textEl, retryBtn, message) {
+  if (!container || !textEl) return;
+  textEl.textContent = message;
+  container.hidden = false;
+}
+
+function hideInlineError(container) {
+  if (!container) return;
+  container.hidden = true;
+}
+
+let pendingCareerSubmit = null;
+let pendingRoadmapSubmit = null;
+
+if (careerRetryBtn) {
+  careerRetryBtn.addEventListener("click", () => {
+    if (pendingCareerSubmit) pendingCareerSubmit();
+  });
+}
+
+if (roadmapRetryBtn) {
+  roadmapRetryBtn.addEventListener("click", () => {
+    if (pendingRoadmapSubmit) pendingRoadmapSubmit();
+  });
+}
 
 if (roadmapOutput) {
   roadmapOutput.classList.add("hidden");
@@ -489,6 +541,11 @@ function renderCareerRecommendations(payload) {
     careerOutput.hidden = false;
   }
 
+  if (!topCareers.length) {
+    showInlineError(careerError, careerErrorText, careerRetryBtn, "No career matches found. Try different interests or skills.");
+    return;
+  }
+
   if (careerRecommendationPanel) {
     clearNode(careerRecommendationPanel);
 
@@ -507,6 +564,13 @@ function renderCareerRecommendations(payload) {
       const type = document.createElement("div");
       type.className = "chip job-type";
       type.textContent = formatTitle(career.type || "open");
+
+      if (payload.ai_used === false) {
+        const aiChip = document.createElement("span");
+        aiChip.className = "chip fallback-chip";
+        aiChip.textContent = "AI analysis unavailable";
+        type.after(aiChip);
+      }
 
       const description = document.createElement("p");
       description.className = "career-description";
@@ -765,31 +829,48 @@ document.addEventListener("keydown", (e) => {
 careerForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   careerForm.classList.add("submitted");
+  hideErrorBanner();
+  hideInlineError(careerError);
 
   const userData = buildCareerFormData(careerForm);
   latestCareerSubmission = userData;
 
-  try {
-    const response = await postEndpointData("api/assess", {
-      interests: userData.interests,
-      skills: userData.skills,
-      education_level: userData.education_level,
-      career_goals: userData.career_goals ? [userData.career_goals] : [],
-      location: userData.country,
-      notes: userData.additional_info,
-    });
+  const submitFn = async () => {
+    if (careerOutput) careerOutput.hidden = false;
+    if (careerSpinner) careerSpinner.hidden = false;
+    if (careerRecommendationPanel) careerRecommendationPanel.hidden = true;
+    if (careerError) careerError.hidden = true;
+    if (skillGapsCard) skillGapsCard.hidden = true;
 
-    localStorage.setItem("career-counselor-session-id", response.session_id);
-    renderCareerRecommendations(response);
-  } catch (error) {
-    console.error("Career recommendation request failed:", error);
-    alert("Career recommendation request failed. Check the backend and try again.");
-  }
+    try {
+      const response = await postEndpointData("api/assess", {
+        interests: userData.interests,
+        skills: userData.skills,
+        education_level: userData.education_level,
+        career_goals: userData.career_goals ? [userData.career_goals] : [],
+        location: userData.country,
+        notes: userData.additional_info,
+      });
+
+      localStorage.setItem("career-counselor-session-id", response.session_id);
+      if (careerSpinner) careerSpinner.hidden = true;
+      renderCareerRecommendations(response);
+    } catch (error) {
+      console.error("Career recommendation request failed:", error);
+      if (careerSpinner) careerSpinner.hidden = true;
+      showInlineError(careerError, careerErrorText, careerRetryBtn, "Failed to get recommendations. Make sure the backend is running (localhost:8001) and try again.");
+    }
+  };
+
+  pendingCareerSubmit = submitFn;
+  await submitFn();
 });
 
 roadmapForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   roadmapForm.classList.add("submitted");
+  hideErrorBanner();
+  hideInlineError(roadmapError);
 
   const roadmapData = buildRoadmapFormData(roadmapForm);
   const sessionId = localStorage.getItem("career-counselor-session-id") || null;
@@ -801,19 +882,30 @@ roadmapForm.addEventListener("submit", async (e) => {
     "5years": 3,
   };
 
-  try {
-    const response = await postEndpointData("api/roadmap", {
-      session_id: sessionId,
-      career_topic: roadmapData.career_topic,
-      timeline_hours_per_week: timelineHoursMap[roadmapData.timeline] || 10,
-      current_level: roadmapData.current_status,
-    });
+  const submitFn = async () => {
+    if (roadmapOutput) roadmapOutput.classList.remove("hidden");
+    if (roadmapSpinner) roadmapSpinner.hidden = false;
+    if (roadmapError) roadmapError.hidden = true;
 
-    renderRoadmapResponse(response);
-  } catch (error) {
-    console.error("Roadmap request failed:", error);
-    alert("Roadmap request failed. Check the backend and try again.");
-  }
+    try {
+      const response = await postEndpointData("api/roadmap", {
+        session_id: sessionId,
+        career_topic: roadmapData.career_topic,
+        timeline_hours_per_week: timelineHoursMap[roadmapData.timeline] || 10,
+        current_level: roadmapData.current_status,
+      });
+
+      if (roadmapSpinner) roadmapSpinner.hidden = true;
+      renderRoadmapResponse(response);
+    } catch (error) {
+      console.error("Roadmap request failed:", error);
+      if (roadmapSpinner) roadmapSpinner.hidden = true;
+      showInlineError(roadmapError, roadmapErrorText, roadmapRetryBtn, "Failed to generate roadmap. Make sure the backend is running (localhost:8001) and try again.");
+    }
+  };
+
+  pendingRoadmapSubmit = submitFn;
+  await submitFn();
 });
 
 careerAutofillBtn.addEventListener("click", () => {

@@ -24,6 +24,11 @@
       </div>
     </nav>
 
+    <div id="error-banner" class="error-banner" hidden role="alert">
+      <span id="error-banner-text"></span>
+      <button type="button" class="error-banner-close" id="error-banner-close">&times;</button>
+    </div>
+
     <main>
       <header>
         <h1>Career Counselor AI</h1>
@@ -170,6 +175,14 @@
         </div>
         <!-- Career Output -->
         <div id="career-output" class="output-section" hidden>
+          <div id="career-spinner" class="spinner-wrapper" hidden>
+            <div class="spinner"></div>
+            <p>Analyzing your profile...</p>
+          </div>
+          <div id="career-error" class="inline-error" hidden>
+            <p id="career-error-text"></p>
+            <button type="button" class="bordered-button" id="career-retry-btn">Try Again</button>
+          </div>
           <h2 class="response-heading">Your Career Matches</h2>
           <p class="output-paragraph">
             Results will appear here after you submit the assessment.
@@ -262,6 +275,14 @@
 
         <!-- Roadmap Output -->
         <div id="roadmap-output" class="output-section hidden">
+          <div id="roadmap-spinner" class="spinner-wrapper" hidden>
+            <div class="spinner"></div>
+            <p>Generating your roadmap...</p>
+          </div>
+          <div id="roadmap-error" class="inline-error" hidden>
+            <p id="roadmap-error-text"></p>
+            <button type="button" class="bordered-button" id="roadmap-retry-btn">Try Again</button>
+          </div>
           <h2 class="response-heading">Your Learning Roadmap</h2>
           <p class="output-paragraph">
             This roadmap is tailored to your current level and selected timeline.
