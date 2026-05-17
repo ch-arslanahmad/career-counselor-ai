@@ -31,7 +31,22 @@ const loginSwitchText = document.getElementById("login-switch-text");
 const loginUsername = document.getElementById("login-username");
 const loginPassword = document.getElementById("login-password");
 
+// Hamburger Menu
+const hamburgerBtn = document.getElementById("hamburger-btn");
+const navContent = document.getElementById("nav-content");
+if (hamburgerBtn && navContent) {
+  hamburgerBtn.addEventListener("click", () => {
+    navContent.classList.toggle("active");
+    hamburgerBtn.classList.toggle("active");
+  });
+}
+
 let isRegisterMode = false;
+
+// Header Auth Buttons
+const headerLoginBtn = document.getElementById("header-login-btn");
+const headerLogoutBtn = document.getElementById("header-logout-btn");
+const headerUserDisplay = document.getElementById("header-user-display");
 
 function updateAuthUI() {
   const user = localStorage.getItem("career-counselor-user");
@@ -42,13 +57,22 @@ function updateAuthUI() {
       userDisplay.textContent = `Hi, ${userObj.username}`;
       userDisplay.classList.remove("hidden");
     }
+    if (headerUserDisplay) {
+      headerUserDisplay.textContent = `Hi, ${userObj.username}`;
+      headerUserDisplay.classList.remove("hidden");
+    }
     if (loginBtn) loginBtn.classList.add("hidden");
     if (logoutBtn) logoutBtn.classList.remove("hidden");
+    if (headerLoginBtn) headerLoginBtn.classList.add("hidden");
+    if (headerLogoutBtn) headerLogoutBtn.classList.remove("hidden");
     if (historyTab) historyTab.classList.remove("hidden");
   } else {
     if (userDisplay) userDisplay.classList.add("hidden");
+    if (headerUserDisplay) headerUserDisplay.classList.add("hidden");
     if (loginBtn) loginBtn.classList.remove("hidden");
     if (logoutBtn) logoutBtn.classList.add("hidden");
+    if (headerLoginBtn) headerLoginBtn.classList.remove("hidden");
+    if (headerLogoutBtn) headerLogoutBtn.classList.add("hidden");
     if (historyTab) historyTab.classList.add("hidden");
     const activeTab = document.querySelector(".tab.active");
     if (activeTab && activeTab.id === "tab-history") {
@@ -1372,7 +1396,9 @@ if (careerDemoBtn) {
     setChipSelections(careerForm.querySelector("#interests-chips"), careerDummyData.interests, careerDummyData.custom_interest);
     setChipSelections(careerForm.querySelector("#skills-chips"), careerDummyData.skills, careerDummyData.custom_skill);
     setChipSelections(careerForm.querySelector("#industries-chips"), careerDummyData.industries, careerDummyData.custom_industry);
+    if (careerOutput) careerOutput.hidden = false;
     renderCareerRecommendations(demoCareerOutput);
+    document.getElementById("career").scrollIntoView({ behavior: "smooth" });
   });
 }
 
@@ -1384,7 +1410,9 @@ if (roadmapDemoBtn) {
     roadmapForm.querySelector("#timeline").value = roadmapDummyData.timeline;
     roadmapForm.querySelector("#current_status").value = roadmapDummyData.current_status;
     roadmapForm.querySelector("#notes").value = roadmapDummyData.notes;
+    if (roadmapOutput) roadmapOutput.classList.remove("hidden");
     renderRoadmapResponse(demoRoadmapOutput);
+    document.getElementById("roadmap").scrollIntoView({ behavior: "smooth" });
   });
 }
 

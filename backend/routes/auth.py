@@ -1,8 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from database import get_optional_db, SQLALCHEMY_AVAILABLE
+import hashlib
 
 router = APIRouter(tags=["auth"])
+
+
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    return hash_password(password) == hashed
 
 
 class RegisterRequest(BaseModel):
@@ -26,7 +35,7 @@ def register(payload: RegisterRequest, db=Depends(get_optional_db)):
     if existing:
         raise HTTPException(400, "Username already exists")
 
-    user = User(username=payload.username, password=payload.password)
+    user = User(username=payload.username, password=hash_password(payload.password))
     db.add(user)
     db.commit()
     return {"message": "Registered successfully", "user_id": user.id, "username": user.username}
@@ -40,7 +49,7 @@ def login(payload: LoginRequest, db=Depends(get_optional_db)):
     from models import User
 
     user = db.query(User).filter(User.username == payload.username).first()
-    if not user or user.password != payload.password:
+    if not user or not verify_password(payload.password, user.password):
         raise HTTPException(401, "Invalid username or password")
 
     return {"message": "Login successful", "user_id": user.id, "username": user.username}

@@ -113,11 +113,16 @@ def update_task(payload: TaskUpdateRequest, db=Depends(get_optional_db)):
     db.commit()
 
     total = db.query(TaskProgress).filter(TaskProgress.session_id == payload.session_id).count()
+    completed_count = db.query(TaskProgress).filter(
+        TaskProgress.session_id == payload.session_id,
+        TaskProgress.completed_at.isnot(None)
+    ).count()
+    progress_percentage = (completed_count / total * 100) if total > 0 else 0.0
 
     return {
         "step_id": payload.step_id,
         "completed": payload.mark_complete,
-        "progress_percentage": 0.0,
+        "progress_percentage": progress_percentage,
     }
 
 
