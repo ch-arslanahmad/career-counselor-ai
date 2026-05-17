@@ -7,7 +7,7 @@
       "type": "open",
       "growth_outlook": "Very High Demand",
       "education_requirement": "Bachelor's in Computer Science or related field",
-      "source": "onet",
+      
       "skills": [
         {"name": "Programming (Python, Java, JavaScript)", "proficiency": "expert", "required": true},
         {"name": "Data Structures and Algorithms", "proficiency": "expert", "required": true},
@@ -31,7 +31,7 @@
       "type": "open",
       "growth_outlook": "High Demand",
       "education_requirement": "Bachelor's in Statistics, Math, or related field",
-      "source": "onet",
+      
       "skills": [
         {"name": "SQL", "proficiency": "expert", "required": true},
         {"name": "Excel", "proficiency": "expert", "required": true},
@@ -55,7 +55,7 @@
       "type": "open",
       "growth_outlook": "High Demand",
       "education_requirement": "Bachelor's in Design, HCI, or related field",
-      "source": "onet",
+      
       "skills": [
         {"name": "User Research", "proficiency": "intermediate", "required": true},
         {"name": "Wireframing", "proficiency": "expert", "required": true},
@@ -79,7 +79,7 @@
       "type": "open",
       "growth_outlook": "High Demand",
       "education_requirement": "Bachelor's in Marketing or Business",
-      "source": "onet",
+      
       "skills": [
         {"name": "SEO", "proficiency": "intermediate", "required": true},
         {"name": "Social Media Marketing", "proficiency": "expert", "required": true},
@@ -103,7 +103,7 @@
       "type": "regulated",
       "growth_outlook": "Very High Demand",
       "education_requirement": "Bachelor of Science in Nursing (BSN) + NCLEX-RN",
-      "source": "onet",
+      
       "skills": [
         {"name": "Patient Care", "proficiency": "expert", "required": true},
         {"name": "Clinical Assessment", "proficiency": "expert", "required": true},
@@ -126,7 +126,7 @@
       "type": "degree_required",
       "growth_outlook": "Moderate Demand",
       "education_requirement": "Bachelor's in Civil Engineering + PE license",
-      "source": "onet",
+      
       "skills": [
         {"name": "Structural Analysis", "proficiency": "expert", "required": true},
         {"name": "CAD Software", "proficiency": "expert", "required": true},
@@ -149,7 +149,7 @@
       "type": "degree_required",
       "growth_outlook": "Stable Demand",
       "education_requirement": "Bachelor's in Accounting or Finance",
-      "source": "onet",
+      
       "skills": [
         {"name": "Financial Accounting", "proficiency": "expert", "required": true},
         {"name": "Tax Preparation", "proficiency": "intermediate", "required": true},
@@ -172,7 +172,7 @@
       "type": "degree_required",
       "growth_outlook": "Moderate Demand",
       "education_requirement": "Bachelor's in Mechanical Engineering",
-      "source": "onet",
+      
       "skills": [
         {"name": "CAD Software", "proficiency": "expert", "required": true},
         {"name": "Thermodynamics", "proficiency": "expert", "required": true},
@@ -195,7 +195,7 @@
       "type": "regulated",
       "growth_outlook": "High Demand",
       "education_requirement": "Bachelor's in Education + Teaching License",
-      "source": "manual_pakistan",
+      
       "skills": [
         {"name": "Subject Expertise", "proficiency": "expert", "required": true},
         {"name": "Classroom Management", "proficiency": "intermediate", "required": true},
@@ -218,7 +218,7 @@
       "type": "open",
       "growth_outlook": "High Demand",
       "education_requirement": "Bootcamp, self-taught, or CS degree",
-      "source": "onet",
+      
       "skills": [
         {"name": "HTML/CSS", "proficiency": "expert", "required": true},
         {"name": "JavaScript", "proficiency": "expert", "required": true},
@@ -242,7 +242,7 @@
       "type": "open",
       "growth_outlook": "High Demand",
       "education_requirement": "Bachelor's + PMP certification (preferred)",
-      "source": "onet",
+      
       "skills": [
         {"name": "Project Planning", "proficiency": "expert", "required": true},
         {"name": "Risk Management", "proficiency": "intermediate", "required": true},
@@ -266,7 +266,7 @@
       "type": "degree_required",
       "growth_outlook": "Very High Demand",
       "education_requirement": "Bachelor's in Cybersecurity or IT + certifications",
-      "source": "onet",
+      
       "skills": [
         {"name": "Network Security", "proficiency": "expert", "required": true},
         {"name": "Threat Analysis", "proficiency": "intermediate", "required": true},
@@ -290,7 +290,7 @@
       "type": "open",
       "growth_outlook": "Moderate Demand",
       "education_requirement": "Portfolio-based (degree optional)",
-      "source": "custom",
+      
       "skills": [
         {"name": "Adobe Creative Suite", "proficiency": "expert", "required": true},
         {"name": "Typography", "proficiency": "intermediate", "required": true},
@@ -313,7 +313,7 @@
       "type": "regulated",
       "growth_outlook": "High Demand",
       "education_requirement": "Doctor of Pharmacy (PharmD) + License",
-      "source": "onet",
+      
       "skills": [
         {"name": "Pharmacology", "proficiency": "expert", "required": true},
         {"name": "Patient Counseling", "proficiency": "expert", "required": true},

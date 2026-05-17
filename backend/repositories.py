@@ -46,7 +46,6 @@ def list_careers(db: Any | None = None) -> list[dict]:
             "category": career.category,
             "type": career.type,
             "growth_outlook": career.growth_outlook,
-            "source": career.source,
             "education_requirement": career.education_requirement,
         }
         for career in rows

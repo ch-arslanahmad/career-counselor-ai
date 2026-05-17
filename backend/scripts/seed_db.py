@@ -44,7 +44,6 @@ def seed_database() -> None:
                     type=career_data.get("type", "open"),
                     growth_outlook=career_data.get("growth_outlook"),
                     education_requirement=career_data.get("education_requirement"),
-                    source=career_data.get("source", "custom"),
                 )
                 db.add(career)
                 db.flush()

@@ -41,10 +41,6 @@ if Base is not None:
             nullable=True,
         )
         growth_outlook: Mapped[str | None] = mapped_column(String(100), nullable=True)
-        source: Mapped[str | None] = mapped_column(
-            Enum("manual_pakistan", "custom", name="career_source"),
-            nullable=True,
-        )
         education_requirement: Mapped[str | None] = mapped_column(String(200), nullable=True)
         created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
         updated_at: Mapped[datetime] = mapped_column(
