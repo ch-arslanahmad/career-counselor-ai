@@ -27,6 +27,8 @@ class RoadmapRequest(BaseModel):
     career_topic: str = Field(default="")
     timeline_hours_per_week: int = Field(default=10, ge=1)
     current_level: str = Field(default="beginner")
+    missing_skills: list[str] = Field(default_factory=list)
+    current_skills: list[str] = Field(default_factory=list)
 
 
 class SkillGapAnalysisRequest(BaseModel):
@@ -142,10 +144,12 @@ def build_roadmap(payload: RoadmapRequest):
 
     system_prompt = (
         "You are a career roadmap generator. Create a learning path for the given career. "
+        "IMPORTANT: Prioritize learning the missing skills first, then deepen knowledge in current skills.\n"
         "Return JSON with:\n"
         "  - career_name: the career role\n"
         "  - total_duration: string (e.g., '6 months', '1 year')\n"
-        "  - what_to_do_right_now: array of 3 objects with {title, description}\n"
+        "  - skill_gap_summary: string explaining which skills are missing and why they matter\n"
+        "  - what_to_do_right_now: array of 3 objects with {title, description} — prioritize missing skills\n"
         "  - steps: array of learning phases, each with:\n"
         "      - step_id: integer\n"
         "      - order: integer (1,2,3...)\n"
@@ -153,13 +157,20 @@ def build_roadmap(payload: RoadmapRequest):
         "      - description: string (what to learn)\n"
         "      - duration: string (e.g., '2 weeks', '1 month')\n"
         "      - resources: array of strings (free online resources, courses, etc.)\n"
-        "      - prerequisites: array of step numbers\n\n"
+        "      - prerequisites: array of step numbers\n"
+        "      - targets_missing_skill: boolean — true if this step teaches a missing skill\n\n"
+        "Context: Student has these skills: {current_skills}. Missing skills for {career_name}: {missing_skills}.\n"
         "Adjust depth based on student's current_level (beginner/some_knowledge/intermediate/advanced) "
         "and weekly hours available. Make it practical and resource-rich."
     )
     ai_payload = generate_json(
         system_prompt,
-        {"roadmap_request": _model_data(payload)},
+        {
+            "roadmap_request": _model_data(payload),
+            "current_skills": payload.current_skills,
+            "missing_skills": payload.missing_skills,
+            "career_name": topic,
+        },
         skeleton,
     )
 

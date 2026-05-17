@@ -720,11 +720,11 @@ const roadmapDummyData = {
 
 const demoCareerOutput = {
   top_3_careers: [
-    { career_name: "Backend Developer", fit_score: 92, description: "Design and build server-side applications using Python, Node.js, or Go.", skills: ["Python", "SQL", "API Design", "Git"], salary_range: "PKR 80,000 - 200,000", growth: "High" },
-    { career_name: "Full Stack Developer", fit_score: 88, description: "Combine frontend and backend skills to build complete web applications.", skills: ["JavaScript", "React", "Node.js", "PostgreSQL"], salary_range: "PKR 100,000 - 250,000", growth: "Very High" },
-    { career_name: "DevOps Engineer", fit_score: 85, description: "Automate deployment pipelines and manage cloud infrastructure.", skills: ["Docker", "Kubernetes", "AWS", "CI/CD"], salary_range: "PKR 120,000 - 300,000", growth: "Very High" },
-    { career_name: "Data Engineer", fit_score: 78, description: "Build data pipelines and manage large-scale data systems.", skills: ["Python", "SQL", "Apache Spark", "Airflow"], salary_range: "PKR 90,000 - 220,000", growth: "High" },
-    { career_name: "AI/ML Engineer", fit_score: 75, description: "Develop machine learning models and AI solutions.", skills: ["Python", "TensorFlow", "PyTorch", "Data Analysis"], salary_range: "PKR 100,000 - 280,000", growth: "Very High" }
+    { career_name: "Backend Developer", fit_score: 92, type: "tech", reasoning: "Design and build server-side applications using Python, Node.js, or Go.", matched_skills: ["Python", "SQL", "API Design"], missing_skills: ["Docker", "Kubernetes"], salary_range: "PKR 80,000 - 200,000", growth: "High" },
+    { career_name: "Full Stack Developer", fit_score: 88, type: "tech", reasoning: "Combine frontend and backend skills to build complete web applications.", matched_skills: ["JavaScript", "React"], missing_skills: ["PostgreSQL", "DevOps"], salary_range: "PKR 100,000 - 250,000", growth: "Very High" },
+    { career_name: "DevOps Engineer", fit_score: 85, type: "tech", reasoning: "Automate deployment pipelines and manage cloud infrastructure.", matched_skills: ["Linux", "Git"], missing_skills: ["Docker", "Kubernetes", "AWS"], salary_range: "PKR 120,000 - 300,000", growth: "Very High" },
+    { career_name: "Data Engineer", fit_score: 78, type: "tech", reasoning: "Build data pipelines and manage large-scale data systems.", matched_skills: ["Python", "SQL"], missing_skills: ["Apache Spark", "Airflow"], salary_range: "PKR 90,000 - 220,000", growth: "High" },
+    { career_name: "AI/ML Engineer", fit_score: 75, type: "tech", reasoning: "Develop machine learning models and AI solutions.", matched_skills: ["Python"], missing_skills: ["TensorFlow", "PyTorch", "MLOps"], salary_range: "PKR 100,000 - 280,000", growth: "Very High" }
   ]
 };
 
@@ -732,17 +732,18 @@ const demoRoadmapOutput = {
   career_name: "Backend Developer",
   total_duration: "8 months",
   current_level: "intermediate",
+  skill_gap_summary: "You have strong Python and API basics. Missing skills: Docker (DevOps), advanced PostgreSQL optimization, and CI/CD pipeline configuration. These are critical for senior backend roles and deployment readiness.",
   what_to_do_right_now: [
     { title: "Complete FastAPI Tutorial", duration: "1 week", description: "Build a REST API with authentication and database integration." },
-    { title: "Set up PostgreSQL locally", duration: "2 days", description: "Install PostgreSQL and practice basic SQL queries." }
+    { title: "Learn Docker Basics", duration: "2 weeks", description: "Containerize your FastAPI app - this is the #1 missing skill for your career goals." }
   ],
   steps: [
-    { step_id: 1, title: "Deepen Language Fundamentals", duration: "4 weeks", description: "Master core Python concepts, data structures, error handling, and OOP principles.", resources: ["https://docs.python.org/3/tutorial/", "https://realpython.com/", "Python: https://www.python.org/", "Node.js: https://nodejs.org/"] },
-    { step_id: 2, title: "Learn API Development", duration: "6 weeks", description: "Build REST APIs using FastAPI/Flask. Understand authentication, validation, and best practices.", resources: ["https://fastapi.tiangolo.com/", "https://www.restapitutorial.com/"] },
-    { step_id: 3, title: "Database Mastery", duration: "4 weeks", description: "Learn PostgreSQL, ORM concepts, migrations, and database design patterns.", resources: ["https://www.postgresql.org/docs/", "https://www.sqlite.org/index.html"] },
-    { step_id: 4, title: "Version Control & Collaboration", duration: "2 weeks", description: "Master Git workflows, branching strategies, and code review practices.", resources: ["https://git-scm.com/doc", "GitHub: https://github.com/"] },
-    { step_id: 5, title: "Build Portfolio Projects", duration: "6 weeks", description: "Create 2-3 full projects: e-commerce API, task manager, or blog backend.", resources: ["Project Ideas: https://github.com/florinpop17/app-ideas"] },
-    { step_id: 6, title: "DevOps Basics", duration: "4 weeks", description: "Learn Docker, CI/CD pipelines, and basic cloud deployment.", resources: ["Docker: https://docker.com/", "GitHub Actions: https://github.com/features/actions"] }
+    { step_id: 1, title: "Deepen Language Fundamentals", duration: "4 weeks", description: "Master core Python concepts, data structures, error handling, and OOP principles.", resources: ["https://docs.python.org/3/tutorial/", "https://realpython.com/"], targets_missing_skill: false },
+    { step_id: 2, title: "Learn API Development", duration: "6 weeks", description: "Build REST APIs using FastAPI/Flask. Understand authentication, validation, and best practices.", resources: ["https://fastapi.tiangolo.com/", "https://www.restapitutorial.com/"], targets_missing_skill: false },
+    { step_id: 3, title: "Database Mastery", duration: "4 weeks", description: "Learn PostgreSQL, ORM concepts, migrations, and database design patterns.", resources: ["https://www.postgresql.org/docs/", "https://www.sqlite.org/index.html"], targets_missing_skill: false },
+    { step_id: 4, title: "Docker & Containerization", duration: "3 weeks", description: "Learn Docker concepts, build images, push to registry. This fills a critical skill gap.", resources: ["Docker: https://docker.com/", "Docker Hub: https://hub.docker.com/"], targets_missing_skill: true },
+    { step_id: 5, title: "CI/CD Pipelines", duration: "3 weeks", description: "Automate testing and deployment using GitHub Actions or similar tools.", resources: ["GitHub Actions: https://github.com/features/actions", "CI/CD best practices: https://martinfowler.com/articles/continuousIntegration.html"], targets_missing_skill: true },
+    { step_id: 6, title: "Build Portfolio Projects", duration: "6 weeks", description: "Create 2-3 full projects with Docker + CI/CD: e-commerce API, task manager, or blog backend.", resources: ["Project Ideas: https://github.com/florinpop17/app-ideas"], targets_missing_skill: false }
   ]
 };
 
@@ -1175,6 +1176,8 @@ function renderRoadmapResponse(payload) {
   const immediateSteps = document.getElementById("roadmap-immediate-steps");
   const roadmapSteps = document.getElementById("roadmap-steps");
   const roadmapOutput = document.getElementById("roadmap-output");
+  const skillGapInsight = document.getElementById("skill-gap-insight");
+  const skillGapSummaryText = document.getElementById("skill-gap-summary-text");
 
   if (roadmapOutput) {
     roadmapOutput.classList.remove("hidden");
@@ -1184,6 +1187,12 @@ function renderRoadmapResponse(payload) {
   if (timelineChip) timelineChip.textContent = payload.total_duration || "12 months";
   if (levelChip) {
     levelChip.textContent = `Current: ${formatTitle(payload.current_level || "beginner")}`;
+  }
+
+  // Display skill gap summary if available
+  if (payload.skill_gap_summary) {
+    if (skillGapInsight) skillGapInsight.hidden = false;
+    if (skillGapSummaryText) skillGapSummaryText.textContent = payload.skill_gap_summary;
   }
 
   if (immediateSteps) {
@@ -1366,11 +1375,22 @@ roadmapForm.addEventListener("submit", async (e) => {
     roadmapSpinnerInterval = startLoadingText("roadmap-spinner-text", roadmapLoadingTexts);
 
     try {
+      // Extract skill gaps from latest career assessment
+      let missingSkills = [];
+      let currentSkills = [];
+      if (latestCareerAssessment && latestCareerAssessment.career_fits && latestCareerAssessment.career_fits.length > 0) {
+        const targetCareer = latestCareerAssessment.career_fits[0];
+        missingSkills = targetCareer.missing_skills || [];
+        currentSkills = targetCareer.matched_skills || [];
+      }
+
       const response = await postEndpointData("api/roadmap", {
         session_id: sessionId,
         career_topic: roadmapData.career_topic,
         timeline_hours_per_week: timelineHoursMap[roadmapData.timeline] || 10,
         current_level: roadmapData.current_status,
+        missing_skills: missingSkills,
+        current_skills: currentSkills,
       });
 
       if (roadmapSpinner) roadmapSpinner.hidden = true;
