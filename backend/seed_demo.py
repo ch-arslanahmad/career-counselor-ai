@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database import SessionLocal
+from routes.auth import hash_password
 
 def seed_demo():
     db = SessionLocal()
@@ -19,7 +20,7 @@ def seed_demo():
             print("Demo user already exists, skipping...")
             return
 
-        demo_user = User(username="demo", password="demo123")
+        demo_user = User(username="demo", password=hash_password("demo123"))
         db.add(demo_user)
         db.commit()
         db.refresh(demo_user)
