@@ -1,0 +1,332 @@
+{
+  "careers": [
+    {
+      "name": "Software Engineer",
+      "description": "Design, develop, and maintain software applications and systems across various platforms.",
+      "category": "Technology",
+      "type": "open",
+      "growth_outlook": "Very High Demand",
+      "education_requirement": "Bachelor's in Computer Science or related field",
+      "source": "onet",
+      "skills": [
+        {"name": "Programming (Python, Java, JavaScript)", "proficiency": "expert", "required": true},
+        {"name": "Data Structures and Algorithms", "proficiency": "expert", "required": true},
+        {"name": "Database Management", "proficiency": "intermediate", "required": true},
+        {"name": "Problem Solving", "proficiency": "expert", "required": true},
+        {"name": "Version Control (Git)", "proficiency": "intermediate", "required": true},
+        {"name": "Communication", "proficiency": "intermediate", "required": false}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Learn Programming Fundamentals", "description": "Master Python or Java basics, syntax, and logic.", "duration": "3 months"},
+        {"step_order": 2, "title": "Data Structures & Algorithms", "description": "Study arrays, linked lists, trees, graphs, and sorting algorithms.", "duration": "4 months"},
+        {"step_order": 3, "title": "Build Projects", "description": "Create 3-5 portfolio projects (web app, API, CLI tool).", "duration": "3 months"},
+        {"step_order": 4, "title": "Learn Version Control & Collaboration", "description": "Master Git, GitHub workflows, and code reviews.", "duration": "1 month"},
+        {"step_order": 5, "title": "Job Search & Interview Prep", "description": "LeetCode practice, system design basics, portfolio refinement.", "duration": "2 months"}
+      ]
+    },
+    {
+      "name": "Data Analyst",
+      "description": "Analyze data sets to identify trends, create visualizations, and support business decisions.",
+      "category": "Technology",
+      "type": "open",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bachelor's in Statistics, Math, or related field",
+      "source": "onet",
+      "skills": [
+        {"name": "SQL", "proficiency": "expert", "required": true},
+        {"name": "Excel", "proficiency": "expert", "required": true},
+        {"name": "Python (Pandas, NumPy)", "proficiency": "intermediate", "required": true},
+        {"name": "Data Visualization", "proficiency": "intermediate", "required": true},
+        {"name": "Statistical Analysis", "proficiency": "intermediate", "required": false},
+        {"name": "Business Acumen", "proficiency": "intermediate", "required": false}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Excel Mastery", "description": "Pivot tables, VLOOKUP, macros, power query.", "duration": "2 months"},
+        {"step_order": 2, "title": "SQL Fundamentals", "description": "Queries, joins, aggregations, subqueries.", "duration": "2 months"},
+        {"step_order": 3, "title": "Python for Data Analysis", "description": "Learn Pandas, NumPy, Jupyter notebooks.", "duration": "3 months"},
+        {"step_order": 4, "title": "Visualization Tools", "description": "Tableau or Power BI basics.", "duration": "2 months"},
+        {"step_order": 5, "title": "Build Portfolio", "description": "Complete 3-4 case studies with visualizations.", "duration": "2 months"}
+      ]
+    },
+    {
+      "name": "UX Designer",
+      "description": "Create user-centered designs for digital products, focusing on usability and user experience.",
+      "category": "Design",
+      "type": "open",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bachelor's in Design, HCI, or related field",
+      "source": "onet",
+      "skills": [
+        {"name": "User Research", "proficiency": "intermediate", "required": true},
+        {"name": "Wireframing", "proficiency": "expert", "required": true},
+        {"name": "Prototyping", "proficiency": "expert", "required": true},
+        {"name": "Figma or Sketch", "proficiency": "expert", "required": true},
+        {"name": "Visual Design", "proficiency": "intermediate", "required": true},
+        {"name": "Communication", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Design Foundations", "description": "Color theory, typography, layout principles.", "duration": "2 months"},
+        {"step_order": 2, "title": "Learn Figma", "description": "Master components, auto-layout, prototypes.", "duration": "2 months"},
+        {"step_order": 3, "title": "UX Research", "description": "User interviews, personas, journey maps.", "duration": "2 months"},
+        {"step_order": 4, "title": "Wireframing & Prototyping", "description": "Create low-fi and hi-fi prototypes.", "duration": "3 months"},
+        {"step_order": 5, "title": "Build Portfolio", "description": "Document 3-4 case studies.", "duration": "2 months"}
+      ]
+    },
+    {
+      "name": "Digital Marketer",
+      "description": "Plan and execute marketing campaigns across digital channels to drive brand awareness and conversions.",
+      "category": "Marketing",
+      "type": "open",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bachelor's in Marketing or Business",
+      "source": "onet",
+      "skills": [
+        {"name": "SEO", "proficiency": "intermediate", "required": true},
+        {"name": "Social Media Marketing", "proficiency": "expert", "required": true},
+        {"name": "Content Creation", "proficiency": "intermediate", "required": true},
+        {"name": "Google Analytics", "proficiency": "expert", "required": true},
+        {"name": "Email Marketing", "proficiency": "intermediate", "required": false},
+        {"name": "Paid Advertising", "proficiency": "intermediate", "required": false}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Digital Marketing Basics", "description": "Understand channels, funnels, metrics.", "duration": "1 month"},
+        {"step_order": 2, "title": "Social Media Mastery", "description": "Platform algorithms, content strategy, scheduling.", "duration": "2 months"},
+        {"step_order": 3, "title": "SEO Fundamentals", "description": "On-page SEO, keyword research, backlinks.", "duration": "2 months"},
+        {"step_order": 4, "title": "Analytics & Data", "description": "Google Analytics, conversion tracking, reporting.", "duration": "2 months"},
+        {"step_order": 5, "title": "Practical Experience", "description": "Run campaigns for portfolio or real clients.", "duration": "3 months"}
+      ]
+    },
+    {
+      "name": "Registered Nurse",
+      "description": "Provide patient care, coordinate with healthcare teams, and educate patients on health management.",
+      "category": "Healthcare",
+      "type": "regulated",
+      "growth_outlook": "Very High Demand",
+      "education_requirement": "Bachelor of Science in Nursing (BSN) + NCLEX-RN",
+      "source": "onet",
+      "skills": [
+        {"name": "Patient Care", "proficiency": "expert", "required": true},
+        {"name": "Clinical Assessment", "proficiency": "expert", "required": true},
+        {"name": "Medication Administration", "proficiency": "expert", "required": true},
+        {"name": "Communication", "proficiency": "expert", "required": true},
+        {"name": "Critical Thinking", "proficiency": "expert", "required": true},
+        {"name": "Empathy", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Nursing Education", "description": "Complete BSN program (4 years).", "duration": "4 years"},
+        {"step_order": 2, "title": "NCLEX-RN Exam", "description": "Pass national licensing exam.", "duration": "2 months"},
+        {"step_order": 3, "title": "Entry-Level Position", "description": "Start in hospital or clinic setting.", "duration": "6 months"},
+        {"step_order": 4, "title": "Specialization", "description": "Pursue certifications in area of interest.", "duration": "1-2 years"}
+      ]
+    },
+    {
+      "name": "Civil Engineer",
+      "description": "Design and supervise construction of infrastructure projects like roads, bridges, and buildings.",
+      "category": "Engineering",
+      "type": "degree_required",
+      "growth_outlook": "Moderate Demand",
+      "education_requirement": "Bachelor's in Civil Engineering + PE license",
+      "source": "onet",
+      "skills": [
+        {"name": "Structural Analysis", "proficiency": "expert", "required": true},
+        {"name": "CAD Software", "proficiency": "expert", "required": true},
+        {"name": "Project Management", "proficiency": "intermediate", "required": true},
+        {"name": "AutoCAD", "proficiency": "expert", "required": true},
+        {"name": "Mathematics", "proficiency": "expert", "required": true},
+        {"name": "Physics", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Engineering Education", "description": "Complete Civil Engineering degree.", "duration": "4 years"},
+        {"step_order": 2, "title": "FE Exam", "description": "Pass Fundamentals of Engineering exam.", "duration": "6 months"},
+        {"step_order": 3, "title": "Entry-Level Work", "description": "Work under licensed engineer (4 years).", "duration": "4 years"},
+        {"step_order": 4, "title": "PE License", "description": "Pass PE exam for professional licensure.", "duration": "1 year"}
+      ]
+    },
+    {
+      "name": "Accountant",
+      "description": "Prepare and examine financial records, ensure accuracy of documents, and ensure compliance with laws.",
+      "category": "Finance",
+      "type": "degree_required",
+      "growth_outlook": "Stable Demand",
+      "education_requirement": "Bachelor's in Accounting or Finance",
+      "source": "onet",
+      "skills": [
+        {"name": "Financial Accounting", "proficiency": "expert", "required": true},
+        {"name": "Tax Preparation", "proficiency": "intermediate", "required": true},
+        {"name": "Auditing", "proficiency": "intermediate", "required": true},
+        {"name": "Excel", "proficiency": "expert", "required": true},
+        {"name": "QuickBooks", "proficiency": "intermediate", "required": false},
+        {"name": "Attention to Detail", "proficiency": "expert", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Accounting Education", "description": "Complete accounting degree.", "duration": "4 years"},
+        {"step_order": 2, "title": "CPA Preparation", "description": "Study for CPA exam (150 credit hours).", "duration": "1-2 years"},
+        {"step_order": 3, "title": "Entry Position", "description": "Start at accounting firm or corporate.", "duration": "6 months"},
+        {"step_order": 4, "title": "CPA Certification", "description": "Pass CPA exams and get licensed.", "duration": "1 year"}
+      ]
+    },
+    {
+      "name": "Mechanical Engineer",
+      "description": "Design and develop mechanical systems and devices across various industries.",
+      "category": "Engineering",
+      "type": "degree_required",
+      "growth_outlook": "Moderate Demand",
+      "education_requirement": "Bachelor's in Mechanical Engineering",
+      "source": "onet",
+      "skills": [
+        {"name": "CAD Software", "proficiency": "expert", "required": true},
+        {"name": "Thermodynamics", "proficiency": "expert", "required": true},
+        {"name": "Materials Science", "proficiency": "intermediate", "required": true},
+        {"name": "Manufacturing Processes", "proficiency": "intermediate", "required": true},
+        {"name": "Problem Solving", "proficiency": "expert", "required": true},
+        {"name": "Mathematics", "proficiency": "expert", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Engineering Foundation", "description": "Complete mechanical engineering degree.", "duration": "4 years"},
+        {"step_order": 2, "title": "CAD Skills", "description": "Master SolidWorks, AutoCAD.", "duration": "6 months"},
+        {"step_order": 3, "title": "Internship", "description": "Gain industry experience.", "duration": "6 months"},
+        {"step_order": 4, "title": "Entry Position", "description": "Start in design or manufacturing role.", "duration": "1 year"}
+      ]
+    },
+    {
+      "name": "Teacher",
+      "description": "Educate students in specific subjects, develop lesson plans, and assess student progress.",
+      "category": "Education",
+      "type": "regulated",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bachelor's in Education + Teaching License",
+      "source": "manual_pakistan",
+      "skills": [
+        {"name": "Subject Expertise", "proficiency": "expert", "required": true},
+        {"name": "Classroom Management", "proficiency": "intermediate", "required": true},
+        {"name": "Lesson Planning", "proficiency": "expert", "required": true},
+        {"name": "Communication", "proficiency": "expert", "required": true},
+        {"name": "Patience", "proficiency": "intermediate", "required": true},
+        {"name": "Technology Integration", "proficiency": "intermediate", "required": false}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Education Degree", "description": "Complete B.Ed or equivalent.", "duration": "4 years"},
+        {"step_order": 2, "title": "Teaching Practice", "description": "Complete student teaching hours.", "duration": "6 months"},
+        {"step_order": 3, "title": "Certification", "description": "Obtain teaching license.", "duration": "3 months"},
+        {"step_order": 4, "title": "Entry Position", "description": "Start teaching at school.", "duration": "6 months"}
+      ]
+    },
+    {
+      "name": "Web Developer",
+      "description": "Build and maintain websites and web applications using front-end and back-end technologies.",
+      "category": "Technology",
+      "type": "open",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bootcamp, self-taught, or CS degree",
+      "source": "onet",
+      "skills": [
+        {"name": "HTML/CSS", "proficiency": "expert", "required": true},
+        {"name": "JavaScript", "proficiency": "expert", "required": true},
+        {"name": "React or Vue", "proficiency": "intermediate", "required": true},
+        {"name": "Responsive Design", "proficiency": "intermediate", "required": true},
+        {"name": "Backend (Node/Python)", "proficiency": "intermediate", "required": false},
+        {"name": "Problem Solving", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "HTML & CSS", "description": "Build static pages, understand layout.", "duration": "2 months"},
+        {"step_order": 2, "title": "JavaScript Basics", "description": "DOM manipulation, ES6 features.", "duration": "3 months"},
+        {"step_order": 3, "title": "Frontend Framework", "description": "Learn React or Vue.js.", "duration": "3 months"},
+        {"step_order": 4, "title": "Backend Basics", "description": "Learn Node.js or Python basics.", "duration": "2 months"},
+        {"step_order": 5, "title": "Build Projects", "description": "Create 3-4 portfolio websites.", "duration": "3 months"}
+      ]
+    },
+    {
+      "name": "Project Manager",
+      "description": "Plan, execute, and close projects, managing resources, timeline, and stakeholders.",
+      "category": "Business",
+      "type": "open",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Bachelor's + PMP certification (preferred)",
+      "source": "onet",
+      "skills": [
+        {"name": "Project Planning", "proficiency": "expert", "required": true},
+        {"name": "Risk Management", "proficiency": "intermediate", "required": true},
+        {"name": "Team Leadership", "proficiency": "expert", "required": true},
+        {"name": "Agile/Scrum", "proficiency": "intermediate", "required": true},
+        {"name": "Communication", "proficiency": "expert", "required": true},
+        {"name": "Budgeting", "proficiency": "intermediate", "required": false}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Foundation", "description": "Understand project management basics.", "duration": "2 months"},
+        {"step_order": 2, "title": "Learn Methodologies", "description": "Study Agile, Scrum, Waterfall.", "duration": "2 months"},
+        {"step_order": 3, "title": "Tools", "description": "Master Jira, Asana, MS Project.", "duration": "2 months"},
+        {"step_order": 4, "title": "PMP Preparation", "description": "Study for PMP certification.", "duration": "3 months"},
+        {"step_order": 5, "title": "Entry Role", "description": "Start as associate PM.", "duration": "6 months"}
+      ]
+    },
+    {
+      "name": "Cybersecurity Analyst",
+      "description": "Protect organizational systems by monitoring for threats, implementing security measures.",
+      "category": "Technology",
+      "type": "degree_required",
+      "growth_outlook": "Very High Demand",
+      "education_requirement": "Bachelor's in Cybersecurity or IT + certifications",
+      "source": "onet",
+      "skills": [
+        {"name": "Network Security", "proficiency": "expert", "required": true},
+        {"name": "Threat Analysis", "proficiency": "intermediate", "required": true},
+        {"name": "Incident Response", "proficiency": "intermediate", "required": true},
+        {"name": "SIEM Tools", "proficiency": "intermediate", "required": true},
+        {"name": "Python/Bash Scripting", "proficiency": "intermediate", "required": true},
+        {"name": "Critical Thinking", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "IT Foundation", "description": "Networking, OS, IT basics.", "duration": "3 months"},
+        {"step_order": 2, "title": "Security Basics", "description": "CompTIA Security+ preparation.", "duration": "3 months"},
+        {"step_order": 3, "title": "Hands-On Labs", "description": "TryHackMe, HackTheBox practice.", "duration": "4 months"},
+        {"step_order": 4, "title": "Certifications", "description": "Get Security+ or CySA+.", "duration": "3 months"},
+        {"step_order": 5, "title": "Entry Position", "description": "Start as SOC analyst.", "duration": "6 months"}
+      ]
+    },
+    {
+      "name": "Graphic Designer",
+      "description": "Create visual content for branding, marketing, and digital media using design software.",
+      "category": "Design",
+      "type": "open",
+      "growth_outlook": "Moderate Demand",
+      "education_requirement": "Portfolio-based (degree optional)",
+      "source": "custom",
+      "skills": [
+        {"name": "Adobe Creative Suite", "proficiency": "expert", "required": true},
+        {"name": "Typography", "proficiency": "intermediate", "required": true},
+        {"name": "Color Theory", "proficiency": "intermediate", "required": true},
+        {"name": "Brand Design", "proficiency": "intermediate", "required": true},
+        {"name": "Print Design", "proficiency": "intermediate", "required": false},
+        {"name": "Communication", "proficiency": "intermediate", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Design Tools", "description": "Master Photoshop, Illustrator, InDesign.", "duration": "4 months"},
+        {"step_order": 2, "title": "Design Principles", "description": "Learn composition, color, typography.", "duration": "2 months"},
+        {"step_order": 3, "title": "Specialization", "description": "Focus on brand, web, or print.", "duration": "2 months"},
+        {"step_order": 4, "title": "Build Portfolio", "description": "Create 10-15 design projects.", "duration": "3 months"}
+      ]
+    },
+    {
+      "name": "Pharmacist",
+      "description": "Dispense medications, counsel patients on drug usage, and ensure medication safety.",
+      "category": "Healthcare",
+      "type": "regulated",
+      "growth_outlook": "High Demand",
+      "education_requirement": "Doctor of Pharmacy (PharmD) + License",
+      "source": "onet",
+      "skills": [
+        {"name": "Pharmacology", "proficiency": "expert", "required": true},
+        {"name": "Patient Counseling", "proficiency": "expert", "required": true},
+        {"name": "Medication Management", "proficiency": "expert", "required": true},
+        {"name": "Chemistry", "proficiency": "intermediate", "required": true},
+        {"name": "Attention to Detail", "proficiency": "expert", "required": true},
+        {"name": "Communication", "proficiency": "expert", "required": true}
+      ],
+      "roadmap": [
+        {"step_order": 1, "title": "Pharmacy Education", "description": "Complete PharmD degree.", "duration": "6 years"},
+        {"step_order": 2, "title": "Licensure Exam", "description": "Pass NAPLEX and MPJE.", "duration": "6 months"},
+        {"step_order": 3, "title": "Entry Position", "description": "Start at pharmacy or hospital.", "duration": "6 months"}
+      ]
+    }
+  ]
+}
