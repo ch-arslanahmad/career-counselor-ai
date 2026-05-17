@@ -1001,7 +1001,6 @@ function renderCareerRecommendations(payload) {
         skillsBlock.appendChild(matchedList);
       } else {
         const emptyMsg = document.createElement("p");
-        emptyMsg.className = "empty-state";
         emptyMsg.textContent = "No skills matched yet. Add more skills to your profile.";
         skillsBlock.appendChild(emptyMsg);
       }
@@ -1012,7 +1011,6 @@ function renderCareerRecommendations(payload) {
         skillsBlock.appendChild(gapsList);
       } else {
         const emptyMsg = document.createElement("p");
-        emptyMsg.className = "empty-state";
         emptyMsg.textContent = "No required skills identified.";
         skillsBlock.appendChild(emptyMsg);
       }

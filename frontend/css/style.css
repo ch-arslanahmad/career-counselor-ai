@@ -565,13 +565,7 @@ li {
   padding: 3px 8px;
 }
 
-.empty-state {
-  font-size: 13px;
-  color: #7f8c8d;
-  font-style: italic;
-  padding: 8px 0;
-  margin: 0;
-}
+
 
 .resource-chip {
   display: flex;
@@ -855,7 +849,6 @@ li {
 }
 
 .roadmap-phase.complete .roadmap-phase-marker {
-  background: var(--color-success);
   color: white;
 }
 
