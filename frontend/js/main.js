@@ -286,6 +286,7 @@ const roadmapCustomTaskInput = document.getElementById("roadmap-custom-task-inpu
 const roadmapAddTaskBtn = document.getElementById("roadmap-add-task-btn");
 const roadmapCustomTaskList = document.getElementById("roadmap-custom-task-list");
 const careerOutput = document.getElementById("career-output");
+const roadmapOutput = document.getElementById("roadmap-output");
 const careerRecommendationPanel = document.getElementById("career-recommendation-panel");
 const skillGapsCard = document.getElementById("skill-gaps");
 const skillGapsContent = document.getElementById("skill-gaps-content");
@@ -300,6 +301,10 @@ const modalReanalyzeBtn = document.getElementById("modal-reanalyze");
 let latestCareerAssessment = null;
 let latestCareerSubmission = null;
 let latestSkillGapAnalysis = null;
+
+if (roadmapOutput) {
+  roadmapOutput.classList.add("hidden");
+}
 
 const careerDummyData = {
   name: "Arslan Ahmad",
@@ -652,7 +657,7 @@ function renderRoadmapResponse(payload) {
   const roadmapOutput = document.getElementById("roadmap-output");
 
   if (roadmapOutput) {
-    roadmapOutput.hidden = false;
+    roadmapOutput.classList.remove("hidden");
   }
 
   if (targetRole) targetRole.textContent = payload.career_name || "Backend Developer";
@@ -862,6 +867,11 @@ document.addEventListener("click", (e) => {
     roadmapForm.querySelector("#career_topic").value = careerTitle;
   }
   if (roadmapTab) roadmapTab.click();
+  if (roadmapForm && typeof roadmapForm.requestSubmit === "function") {
+    roadmapForm.requestSubmit();
+  } else if (roadmapForm) {
+    roadmapForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  }
 });
 
 // Generate Mock Recommendations
