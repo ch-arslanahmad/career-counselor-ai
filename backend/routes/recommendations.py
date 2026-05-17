@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from uuid import uuid4
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -22,6 +23,7 @@ class CareerAssessRequest(BaseModel):
 
 
 class RoadmapRequest(BaseModel):
+    user_id: int | None = None
     session_id: str | None = None
     career_id: int | None = None
     career_topic: str = Field(default="")
@@ -32,6 +34,7 @@ class RoadmapRequest(BaseModel):
 
 
 class SkillGapAnalysisRequest(BaseModel):
+    user_id: int | None = None
     session_id: str | None = None
     target_role: str = ""
     skills_data: list[str] = Field(default_factory=list)
@@ -48,6 +51,53 @@ def _model_data(model: BaseModel) -> dict:
     if hasattr(model, "model_dump"):
         return model.model_dump()
     return model.dict()
+
+
+def _history_results_value(value: Any) -> dict:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, list):
+        return {"legacy_entries": value}
+    return {}
+
+
+def _store_assessment_history(
+    db: Any,
+    *,
+    user_id: int,
+    session_id: str,
+    payload: BaseModel,
+    assessment_result: dict[str, Any] | None = None,
+    roadmap_result: dict[str, Any] | None = None,
+    skill_gap_result: dict[str, Any] | None = None,
+) -> None:
+    from models import AssessmentHistory
+
+    history = (
+        db.query(AssessmentHistory)
+        .filter(AssessmentHistory.user_id == user_id, AssessmentHistory.session_id == session_id)
+        .first()
+    )
+    if history is None:
+        history = AssessmentHistory(user_id=user_id, session_id=session_id)
+        db.add(history)
+
+    history.name = getattr(payload, "name", history.name)
+    history.interests = getattr(payload, "interests", history.interests)
+    history.skills = getattr(payload, "skills", history.skills)
+    history.education_level = getattr(payload, "education_level", history.education_level)
+    history.career_goals = getattr(payload, "career_goals", history.career_goals)
+    history.location = getattr(payload, "location", history.location)
+    history.notes = getattr(payload, "notes", history.notes)
+
+    current_results = _history_results_value(history.career_results)
+    if assessment_result is not None:
+        current_results["assessment"] = assessment_result
+    if roadmap_result is not None:
+        current_results["roadmap"] = roadmap_result
+    if skill_gap_result is not None:
+        current_results["skill_gap_analysis"] = skill_gap_result
+    history.career_results = current_results
 
 
 _ASSESS_SYSTEM_PROMPT = (
@@ -102,20 +152,17 @@ def assess_careers(payload: CareerAssessRequest):
         if SQLALCHEMY_AVAILABLE:
             db = next(get_optional_db())
             if db:
-                from models import AssessmentHistory
-                history = AssessmentHistory(
+                _store_assessment_history(
+                    db,
                     user_id=payload.user_id,
                     session_id=session_id,
-                    name=payload.name,
-                    interests=payload.interests,
-                    skills=payload.skills,
-                    education_level=payload.education_level,
-                    career_goals=payload.career_goals,
-                    location=payload.location,
-                    notes=payload.notes,
-                    career_results={"career_fits": career_fits, "top_3": top_3, "next_steps": next_steps},
+                    payload=payload,
+                    assessment_result={
+                        "career_fits": career_fits,
+                        "top_3": top_3,
+                        "next_steps": next_steps,
+                    },
                 )
-                db.add(history)
                 db.commit()
 
     return {
@@ -196,12 +243,64 @@ def build_roadmap(payload: RoadmapRequest):
         result["career_name"] = str(ai_payload["career_name"])
     result["ai_used"] = True
     result["ai_provider"] = ai_payload.get("ai_provider", "unknown")
+
+    if not payload.missing_skills and not payload.current_skills:
+        result.pop("skill_gap_summary", None)
+        result.pop("what_to_do_right_now", None)
+
+    if payload.user_id and session_id:
+        from database import get_optional_db, SQLALCHEMY_AVAILABLE
+        if SQLALCHEMY_AVAILABLE:
+            db = next(get_optional_db())
+            if db:
+                _store_assessment_history(
+                    db,
+                    user_id=payload.user_id,
+                    session_id=session_id,
+                    payload=payload,
+                    roadmap_result=result,
+                )
+                db.commit()
+
     return result
 
 
 @router.post("/api/skill-gap-analysis")
 def analyze_skill_gap(payload: SkillGapAnalysisRequest):
     target_role = payload.target_role.strip() or "Backend Developer"
+
+    if not payload.skills_data:
+        result = {
+            "session_id": payload.session_id or str(uuid4()),
+            "target_role": target_role,
+            "career_name": target_role,
+            "gap_analysis": {
+                "matched_skills": [],
+                "missing_skills": [],
+                "summary": "",
+            },
+            "recommendations": [],
+            "internship_readiness": 0.0,
+            "target_roles": [target_role],
+            "ai_used": False,
+            "ai_provider": "none",
+        }
+
+        if payload.user_id and payload.session_id:
+            from database import get_optional_db, SQLALCHEMY_AVAILABLE
+            if SQLALCHEMY_AVAILABLE:
+                db = next(get_optional_db())
+                if db:
+                    _store_assessment_history(
+                        db,
+                        user_id=payload.user_id,
+                        session_id=payload.session_id,
+                        payload=payload,
+                        skill_gap_result=result,
+                    )
+                    db.commit()
+
+        return result
 
     system_prompt = (
         "You are a skill-gap analysis AI. Given a student's skills and a target role, "
@@ -233,7 +332,7 @@ def analyze_skill_gap(payload: SkillGapAnalysisRequest):
     if not isinstance(gap_analysis, dict):
         gap_analysis = {}
 
-    return {
+    result = {
         "session_id": payload.session_id or str(uuid4()),
         "target_role": target_role,
         "career_name": ai_payload.get("career_name", target_role),
@@ -248,6 +347,22 @@ def analyze_skill_gap(payload: SkillGapAnalysisRequest):
         "ai_used": True,
         "ai_provider": ai_payload.get("ai_provider", "unknown"),
     }
+
+    if payload.user_id and payload.session_id:
+        from database import get_optional_db, SQLALCHEMY_AVAILABLE
+        if SQLALCHEMY_AVAILABLE:
+            db = next(get_optional_db())
+            if db:
+                _store_assessment_history(
+                    db,
+                    user_id=payload.user_id,
+                    session_id=payload.session_id,
+                    payload=payload,
+                    skill_gap_result=result,
+                )
+                db.commit()
+
+    return result
 
 
 @router.get("/api/ai/status")

@@ -64,15 +64,15 @@
     <main>
       <header>
         <h1>Career Counselor AI</h1>
-        <p>Find your fulfilling career & roadmap for your desired field</p>
+        <p>Get career matches, a learning roadmap, and saved progress for your account or this device.</p>
       </header>
 
       <!-- Tab 1: Career Recommendation -->
       <section id="career" class="tab-content active">
         <div class="input-section">
           <div class="section-header">
-            <h2>Career Recommendation</h2>
-            <p>Tell us about yourself to get personalized career suggestions</p>
+          <h2>Career Recommendation</h2>
+          <p>Tell us about yourself to get career suggestions and saved assessment data.</p>
           </div>
 
           <form id="career-form">
@@ -219,7 +219,7 @@
           <div id="career-content" class="career-content" hidden>
             <h2 class="response-heading">Your Career Matches</h2>
             <p class="output-paragraph">
-              Results will appear here after you submit the assessment.
+              Results will appear here after you submit the assessment. Signed-in users save to the database; others stay on this device.
             </p>
             <div id="career-recommendation-panel" class="card-list"></div>
           <div id="skill-gaps" class="skill-gaps-section card" hidden>
@@ -244,7 +244,7 @@
       <section id="roadmap" class="tab-content">
         <div class="section-header">
           <h2>Roadmap Generation</h2>
-          <p>Get a step-by-step learning plan to reach your career goals</p>
+          <p>Get a step-by-step learning plan based on your latest assessment or saved session.</p>
         </div>
 
         <form id="roadmap-form">
@@ -339,13 +339,13 @@
               <div class="roadmap-meta-chips">
                 <span class="chip job-type" id="roadmap-timeline-chip">-</span>
                 <span class="chip" id="roadmap-level-chip">Current: -</span>
-                <button type="button" class="chip action-chip" id="view-progress-btn">View Progress</button>
+                <button type="button" class="chip action-chip" id="view-progress-btn">View Saved Progress</button>
               </div>
             </div>
 
             <div id="progress-panel" class="progress-panel hidden">
               <div class="progress-header">
-                <h3>Your Progress</h3>
+                <h3>Saved Progress</h3>
                 <span class="progress-stats" id="progress-stats">0/0 completed (0%)</span>
               </div>
               <ul id="progress-step-list" class="progress-step-list"></ul>
@@ -357,14 +357,14 @@
             </div>
 
             <div class="skill-gap-insight" id="skill-gap-insight" hidden>
-              <h3>Skill Gap Analysis</h3>
+              <h3>Skills You Still Need</h3>
               <p id="skill-gap-summary-text"></p>
             </div>
 
           <div class="roadmap-custom-checklist">
             <div class="roadmap-custom-checklist-head">
               <h3>Custom Checklist</h3>
-              <p>Add your own todos outside phase tasks.</p>
+              <p>Add your own tasks outside the generated roadmap.</p>
             </div>
             <div class="roadmap-custom-checklist-controls">
               <input
@@ -385,17 +385,18 @@
       <section id="history" class="tab-content">
         <div class="section-header">
           <h2>Your History</h2>
-          <p>View your past assessments and progress</p>
+          <p>Signed-in users load history from the database. Unsigned users keep it on this device.</p>
         </div>
 
         <div id="history-content" class="history-content">
+          <p id="history-source-note" class="history-source-note"></p>
           <div id="history-loading" class="spinner-wrapper" hidden>
             <div class="spinner"></div>
             <p>Loading history...</p>
           </div>
 
           <div id="history-login-required" class="history-login-required">
-            <p>Please <button type="button" id="history-login-btn" class="login-btn">Login</button> to view your history.</p>
+            <p>Please <button type="button" id="history-login-btn" class="login-btn">Sign in</button> to sync history to the database.</p>
           </div>
 
           <div id="history-assessments" class="history-section hidden">
@@ -426,7 +427,7 @@
           &times;
         </button>
         <p class="modal-eyebrow">Skills analysis</p>
-        <h3 id="skills-modal-title">Skill Gap Overview</h3>
+        <h3 id="skills-modal-title">Skills You Need Next</h3>
         <p class="modal-copy" id="skills-modal-copy"></p>
         <div class="modal-grid">
           <article class="modal-summary">
