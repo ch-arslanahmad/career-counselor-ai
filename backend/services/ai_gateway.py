@@ -62,6 +62,28 @@ def _from_env() -> AIProviderConfig | None:
 
     openai_key = os.getenv("OPENAI_API_KEY", "").strip()
     anthropic_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    opencode_zen_key = os.getenv("OPENCODE_ZEN_API_KEY", "").strip()
+
+    if provider_id == "opencode-zen" and opencode_zen_key:
+        return AIProviderConfig(
+            provider_id="opencode-zen",
+            provider_type="openai-compat",
+            api_key=opencode_zen_key,
+            api_endpoint=os.getenv("OPENCODE_ZEN_API_ENDPOINT", "https://opencode.ai/zen/v1"),
+            model=os.getenv("OPENCODE_ZEN_MODEL", os.getenv("AI_MODEL", "big-pickle")),
+            source="env",
+        )
+
+    if provider_id == "openrouter" and openrouter_key:
+        return AIProviderConfig(
+            provider_id="openrouter",
+            provider_type="openai-compat",
+            api_key=openrouter_key,
+            api_endpoint=os.getenv("OPENROUTER_API_ENDPOINT", "https://openrouter.ai/api/v1"),
+            model=os.getenv("OPENROUTER_MODEL", os.getenv("AI_MODEL", "openai/gpt-3.5-turbo")),
+            source="env",
+        )
 
     if provider_id == "anthropic" and anthropic_key:
         return AIProviderConfig(
@@ -157,6 +179,7 @@ def get_ai_status() -> dict[str, Any]:
 
 def _post_json(url: str, headers: dict[str, str], payload: dict[str, Any], timeout: int) -> dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
+    headers.setdefault("User-Agent", "CareerCounselorAI/1.0")
     request = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
     try:
