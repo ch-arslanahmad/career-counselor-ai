@@ -1,0 +1,126 @@
+## Current IDEA/PLAN
+
+
+**New Additions**
+
+
+
+- `backend/models/` — DB model definitions
+
+- `backend/services/` — AI API calls, O*NET API calls, business logic
+
+- `backend/db/` — seed scripts, migrations, DB connection handling
+
+- Career fit score — numeric score per career based on skill diff against taxonomy
+
+- Timeline-aware roadmap — uses user's available hours/week from intake form
+
+- "What to do right now" module — 3 immediate next steps per roadmap
+
+- Weekly task breakdown from roadmap — users return to mark progress
+
+- Skill snapshots over time — re-evaluate fit score as skills update
+
+- Re-assessment flow — retake intake, show delta from last time
+
+- Career market context — growth outlook, salary range pulled from O*NET
+
+- Fallback/adjacent career suggestions — for mismatched or regulated careers
+
+- University/program recommender — based on career goal + grades + location, local
+
+- Internship readiness checker — skills vs typical internship requirements
+
+- Contextual CV analyzer — uses existing profile/skills/gap data, not generic
+
+- O*NET seed script — one-time script that hits O*NET API and populates careers + skills + career_skills tables
+
+- Skill normalization cleanup prompt — post-seed dedup of overlapping skill names
+
+- `type` flag on careers table — `open` / `regulated` / `degree_required` to change roadmap behavior
+
+- Pakistan-specific supplementary careers table — ~20-30 local careers O*NET won't cover
+
+
+
+---
+
+
+
+**Refactors**
+
+
+
+- Rewrite `ARCHITECTURE.md` — reflect new structure, DB, O*NET integration
+
+- Rewrite `VISION.md` — reflect pivot from one-shot counselor to student progress tracker
+
+- Update `REQUIREMENTS.md` — add all new features
+
+- Rewrite `README.md` — showcase format: what it does, stack, features, setup, data source
+
+- Consider frontend migration to React — current vanilla JS will get painful with dynamic task tracking and progress UI
+
+
+
+---
+
+
+
+**Approach/Methodology**
+
+
+
+- AI is used for interpretation and personalization only — DB + O*NET holds ground truth, AI advises on top of it
+
+- O*NET as authoritative data source for career/skill taxonomy — not AI-generated
+
+- Manual curation of career list before seeding — AI fills skill details, you control career names
+
+- Single intake/onboarding form drives all modules — one profile, multiple output types
+
+- Regulated career detection via `type` flag — changes prompt and roadmap behavior, not a generic fallback
+
+- Provider-agnostic AI wrapper — one function handles all API calls, swap provider in one line
+
+- Stateless request enriched by DB — form input + DB taxonomy = structured prompt, better output consistency
+
+
+
+---
+
+
+
+**Resources & Usage**
+
+
+
+- **O*NET Web Services API** (`services.onetcenter.org`) — pull occupations, skills, education requirements, growth outlook, salary data into your DB via seed script
+
+- **MySQL** — primary DB, 6 core tables: `users`, `careers`, `skills`, `career_skills`, `roadmaps`, `tasks`, `progress_logs`, `skill_snapshots`, `resources`
+
+- **Claude API / OpenAI API** — wrapped in single `get_ai_response()` function, receives structured prompt built from DB data
+
+- **FastAPI** — existing backend, add route groups per module: `/recommend`, `/roadmap`, `/gap`, `/tasks`, `/progress`
+
+- **React** (if frontend migrated) — needed for dynamic task tracking, progress updates, re-assessment UI
+
+
+
+---
+
+
+
+**Architecture Decisions**
+
+
+
+- Accounts/login are required — app is a returning-user product (task tracking, progress, re-assessment), UUID sessions are not viable for real use
+
+- DB is justified by taxonomy + persistence, not by auth alone — even without accounts, O*NET taxonomy improves output quality
+
+- Career counseling is the onboarding, progress tracking is the retention loop — one-shot tool becomes a product
+
+- Repo name stays `career-counselor-ai` — renaming mid-project breaks references, name still accurate
+
+- O*NET covers ~900 occupations, supplemented by manual Pakistan-specific table — not fully AI-generated, not fully manual

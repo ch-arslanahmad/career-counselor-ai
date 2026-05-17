@@ -18,11 +18,44 @@
         <img class="logo" src="career-path.svg" alt="career-path-logo" />
       </div>
 
-      <div class="tabs">
-        <a href="#career" class="tab active">Career Recommendation</a>
-        <a href="#roadmap" class="tab">Roadmap Generation</a>
+      <button type="button" class="hamburger" id="hamburger-btn" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-content" id="nav-content">
+        <div class="tabs">
+          <a href="#career" class="tab active" id="tab-career">Career Recommendation</a>
+          <a href="#roadmap" class="tab" id="tab-roadmap">Roadmap Generation</a>
+          <a href="#history" class="tab" id="tab-history">History</a>
+        </div>
+
+        <div class="auth-section">
+          <span id="user-display" class="hidden"></span>
+          <button type="button" id="login-btn" class="login-btn">Login</button>
+          <button type="button" id="logout-btn" class="login-btn hidden">Logout</button>
+        </div>
       </div>
     </nav>
+
+    <div id="login-modal" class="modal" hidden>
+      <div class="modal-backdrop" data-modal-close></div>
+      <div class="modal-panel login-panel">
+        <button type="button" class="modal-close" data-modal-close>&times;</button>
+        <h3 id="login-title">Login</h3>
+        <form id="login-form">
+          <input type="text" id="login-username" placeholder="Username" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button type="submit" class="login-submit">Login</button>
+          <button type="button" class="demo-login-btn" id="demo-login-btn">Demo Login</button>
+        </form>
+        <p class="login-switch">
+          <span id="login-switch-text">Don't have an account?</span>
+          <button type="button" id="login-switch-btn">Register</button>
+        </p>
+      </div>
+    </div>
 
     <div id="error-banner" class="error-banner" hidden role="alert">
       <span id="error-banner-text"></span>
@@ -166,8 +199,8 @@
               <button
                 class="dummy-button"
                 type="button"
-                id="career-autofill-btn">
-                Auto-fill Dummy Data
+                id="career-demo-btn">
+                Try Demo
               </button>
               <button type="submit">Get Recommendations</button>
             </fieldset>
@@ -177,17 +210,19 @@
         <div id="career-output" class="output-section" hidden>
           <div id="career-spinner" class="spinner-wrapper" hidden>
             <div class="spinner"></div>
-            <p>Analyzing your profile...</p>
+            <p id="career-spinner-text">Analyzing your profile...</p>
           </div>
           <div id="career-error" class="inline-error" hidden>
             <p id="career-error-text"></p>
             <button type="button" class="bordered-button" id="career-retry-btn">Try Again</button>
           </div>
-          <h2 class="response-heading">Your Career Matches</h2>
-          <p class="output-paragraph">
-            Results will appear here after you submit the assessment.
-          </p>
-          <div id="career-recommendation-panel" class="card-list"></div>
+
+          <div id="career-content" class="career-content" hidden>
+            <h2 class="response-heading">Your Career Matches</h2>
+            <p class="output-paragraph">
+              Results will appear here after you submit the assessment.
+            </p>
+            <div id="career-recommendation-panel" class="card-list"></div>
           <div id="skill-gaps" class="skill-gaps-section card" hidden>
             <div id="skill-gaps-content"></div>
             <div class="buttons">
@@ -201,6 +236,7 @@
                 Hide Recommendation
               </button>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -266,10 +302,17 @@
             <button
               class="dummy-button"
               type="button"
-              id="roadmap-autofill-btn">
-              Auto-fill Dummy Data
+              id="roadmap-demo-btn">
+              Try Demo
             </button>
             <button type="submit">Generate Roadmap</button>
+          </fieldset>
+
+          <fieldset class="field track-toggle">
+            <label class="track-label">
+              <input type="checkbox" id="enable-tracking" />
+              Enable progress tracking (checkboxes)
+            </label>
           </fieldset>
         </form>
 
@@ -277,31 +320,42 @@
         <div id="roadmap-output" class="output-section hidden">
           <div id="roadmap-spinner" class="spinner-wrapper" hidden>
             <div class="spinner"></div>
-            <p>Generating your roadmap...</p>
+            <p id="roadmap-spinner-text">Generating your roadmap...</p>
           </div>
           <div id="roadmap-error" class="inline-error" hidden>
             <p id="roadmap-error-text"></p>
             <button type="button" class="bordered-button" id="roadmap-retry-btn">Try Again</button>
           </div>
-          <h2 class="response-heading">Your Learning Roadmap</h2>
-          <p class="output-paragraph">
-            This roadmap is tailored to your current level and selected timeline.
-          </p>
 
-          <div class="roadmap-header-bar">
-            <h3 class="career-path">
-              Target Path: <span id="roadmap-target-role">Backend Developer</span>
-            </h3>
-            <div class="roadmap-meta-chips">
-              <span class="chip job-type" id="roadmap-timeline-chip">12 months</span>
-              <span class="chip" id="roadmap-level-chip">Current: Some Knowledge</span>
+          <div id="roadmap-content" class="roadmap-content" hidden>
+            <h2 class="response-heading">Your Learning Roadmap</h2>
+            <p class="output-paragraph">
+              This roadmap is tailored to your current level and selected timeline.
+            </p>
+
+            <div class="roadmap-header-bar">
+              <h3 class="career-path">
+                Target Path: <span id="roadmap-target-role">-</span>
+              </h3>
+              <div class="roadmap-meta-chips">
+                <span class="chip job-type" id="roadmap-timeline-chip">-</span>
+                <span class="chip" id="roadmap-level-chip">Current: -</span>
+                <button type="button" class="chip action-chip" id="view-progress-btn">View Progress</button>
+              </div>
             </div>
-          </div>
 
-          <div class="roadmap-now-section">
-            <h3>What to do right now</h3>
-            <div id="roadmap-immediate-steps" class="roadmap-now-grid"></div>
-          </div>
+            <div id="progress-panel" class="progress-panel hidden">
+              <div class="progress-header">
+                <h3>Your Progress</h3>
+                <span class="progress-stats" id="progress-stats">0/0 completed (0%)</span>
+              </div>
+              <ul id="progress-step-list" class="progress-step-list"></ul>
+            </div>
+
+            <div class="roadmap-now-section">
+              <h3>What to do right now</h3>
+              <div id="roadmap-immediate-steps" class="roadmap-now-grid"></div>
+            </div>
 
           <div class="roadmap-custom-checklist">
             <div class="roadmap-custom-checklist-head">
@@ -318,8 +372,39 @@
             <ul id="roadmap-custom-task-list" class="roadmap-task-list"></ul>
           </div>
 
+          <h4 id="checklist-header" class="checklist-header hidden">Your Checklist</h4>
           <div id="roadmap-steps" class="roadmap-timeline"></div>
+          </div>
         </div>
+
+      <!-- Tab 3: History -->
+      <section id="history" class="tab-content">
+        <div class="section-header">
+          <h2>Your History</h2>
+          <p>View your past assessments and progress</p>
+        </div>
+
+        <div id="history-content" class="history-content">
+          <div id="history-loading" class="spinner-wrapper" hidden>
+            <div class="spinner"></div>
+            <p>Loading history...</p>
+          </div>
+
+          <div id="history-login-required" class="history-login-required">
+            <p>Please <button type="button" id="history-login-btn" class="login-btn">Login</button> to view your history.</p>
+          </div>
+
+          <div id="history-assessments" class="history-section hidden">
+            <h3>Past Assessments</h3>
+            <div id="assessment-list" class="assessment-list"></div>
+          </div>
+
+          <div id="history-progress" class="history-section hidden">
+            <h3>Completed Steps</h3>
+            <div id="progress-list" class="progress-list"></div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <div id="skills-modal" class="modal" hidden aria-hidden="true">

@@ -11,11 +11,14 @@ router = APIRouter(tags=["recommendations"])
 
 
 class CareerAssessRequest(BaseModel):
+    user_id: int | None = None
+    name: str = ""
     interests: list[str] = Field(default_factory=list)
     skills: list[str] = Field(default_factory=list)
     education_level: str = ""
     career_goals: list[str] = Field(default_factory=list)
     location: str = ""
+    notes: str = ""
 
 
 class RoadmapRequest(BaseModel):
@@ -46,17 +49,24 @@ def _model_data(model: BaseModel) -> dict:
 
 
 _ASSESS_SYSTEM_PROMPT = (
-    "You are a career assessment AI. Given a student's skills, interests, education, and goals, "
-    "return a JSON object with:\n"
-    "- career_fits: array of career objects, each with:\n"
-    "    career_id (integer, sequential), career_name, fit_score (0-99 integer, based on skill match),\n"
-    "    skill_match (0.0-1.0 float), matched_skills (array of strings the student has),\n"
-    "    missing_skills (array of strings the student needs), reasoning (string),\n"
-    "    growth_outlook, type (open/regulated/degree_required), category, education_requirement\n"
-    "- top_3_careers: the 3 highest-scoring careers from career_fits\n"
-    "- immediate_next_steps: array of 3 string action items\n\n"
-    "Score formula: base=15, +skill_match_weight(up to 70), +education_bonus(8).\n"
-    "Be realistic. Don't inflate scores. Generate 8-12 careers."
+    "You are a career counselor AI. Analyze the student's profile and return JSON with:\n\n"
+    "career_fits: array of careers, each MUST include:\n"
+    "  - career_name: string (e.g., Software Engineer, Data Scientist)\n"
+    "  - fit_score: integer 0-99 (realistic, not inflated)\n"
+    "  - matched_skills: array of strings - skills from student's input that match this career\n"
+    "  - missing_skills: array of strings - skills this career needs that student doesn't have\n"
+    "  - reasoning: string explaining why this career matches\n"
+    "  - growth_outlook: string (e.g., Very High, High, Moderate)\n"
+    "  - type: string (open, regulated, or degree_required)\n"
+    "  - category: string (Technology, Design, Healthcare, Business, etc.)\n"
+    "  - education_requirement: string\n\n"
+    "IMPORTANT: Always include matched_skills and missing_skills arrays for each career. "
+    "If student has no matching skills, matched_skills = []. "
+    "If no obvious missing skills, missing_skills = [].\n\n"
+    "Also return:\n"
+    "  - top_3_careers: array of the 3 highest-scoring careers\n"
+    "  - immediate_next_steps: array of 3 string action items\n\n"
+    "Score: base=15 + (skill_match * 70) + education_bonus(8). Generate 8-12 careers."
 )
 
 
@@ -82,8 +92,32 @@ def assess_careers(payload: CareerAssessRequest):
     top_3 = ai_payload.get("top_3_careers", career_fits[:3])
     next_steps = ai_payload.get("immediate_next_steps", [])
 
+    session_id = str(uuid4())
+
+    # Save to history if user_id provided
+    if payload.user_id:
+        from database import get_optional_db, SQLALCHEMY_AVAILABLE
+        if SQLALCHEMY_AVAILABLE:
+            db = next(get_optional_db())
+            if db:
+                from models import AssessmentHistory
+                history = AssessmentHistory(
+                    user_id=payload.user_id,
+                    session_id=session_id,
+                    name=payload.name,
+                    interests=payload.interests,
+                    skills=payload.skills,
+                    education_level=payload.education_level,
+                    career_goals=payload.career_goals,
+                    location=payload.location,
+                    notes=payload.notes,
+                    career_results={"career_fits": career_fits, "top_3": top_3, "next_steps": next_steps},
+                )
+                db.add(history)
+                db.commit()
+
     return {
-        "session_id": str(uuid4()),
+        "session_id": session_id,
         "assessment_id": 1,
         "career_fits": career_fits,
         "top_3_careers": top_3[:3],
@@ -107,11 +141,21 @@ def build_roadmap(payload: RoadmapRequest):
     }
 
     system_prompt = (
-        "You are an AI career roadmap generator. "
-        "Generate a complete learning roadmap from scratch for the given career topic, student level, and weekly hours. "
-        "Return JSON with: career_name, total_duration, what_to_do_right_now (array of {title, description}), "
-        "and steps (array of {step_id, order, title, description, duration, resources, prerequisites}). "
-        "Make steps detailed, realistic, and ordered. Use the student's current_level and timeline_hours_per_week to adjust depth and pace."
+        "You are a career roadmap generator. Create a learning path for the given career. "
+        "Return JSON with:\n"
+        "  - career_name: the career role\n"
+        "  - total_duration: string (e.g., '6 months', '1 year')\n"
+        "  - what_to_do_right_now: array of 3 objects with {title, description}\n"
+        "  - steps: array of learning phases, each with:\n"
+        "      - step_id: integer\n"
+        "      - order: integer (1,2,3...)\n"
+        "      - title: string (e.g., 'Learn Python Basics')\n"
+        "      - description: string (what to learn)\n"
+        "      - duration: string (e.g., '2 weeks', '1 month')\n"
+        "      - resources: array of strings (free online resources, courses, etc.)\n"
+        "      - prerequisites: array of step numbers\n\n"
+        "Adjust depth based on student's current_level (beginner/some_knowledge/intermediate/advanced) "
+        "and weekly hours available. Make it practical and resource-rich."
     )
     ai_payload = generate_json(
         system_prompt,

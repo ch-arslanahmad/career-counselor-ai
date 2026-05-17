@@ -105,17 +105,73 @@ def _from_env() -> AIProviderConfig | None:
             source="env",
         )
 
+    return None
+
+
+def _get_all_available_providers() -> list[AIProviderConfig]:
+    """Return list of all providers with valid API keys, ordered by speed (fastest first)."""
+    providers = []
+    openai_key = os.getenv("OPENAI_API_KEY", "").strip()
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    opencode_zen_key = os.getenv("OPENCODE_ZEN_API_KEY", "").strip()
+    nvidia_nim_key = os.getenv("NVIDIA_NIM_API_KEY", "").strip()
+
+    # Fast models first (small/fast models)
+    if opencode_zen_key:
+        providers.append(AIProviderConfig(
+            provider_id="opencode-zen",
+            provider_type="openai-compat",
+            api_key=opencode_zen_key,
+            api_endpoint=os.getenv("OPENCODE_ZEN_API_ENDPOINT", "https://opencode.ai/zen/v1"),
+            model=os.getenv("OPENCODE_ZEN_MODEL", os.getenv("AI_MODEL", "big-pickle")),
+            source="env",
+        ))
+
+    if openrouter_key:
+        # Try fast models first via OpenRouter
+        fast_model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct")
+        providers.append(AIProviderConfig(
+            provider_id="openrouter",
+            provider_type="openai-compat",
+            api_key=openrouter_key,
+            api_endpoint=os.getenv("OPENROUTER_API_ENDPOINT", "https://openrouter.ai/api/v1"),
+            model=fast_model,
+            source="env",
+        ))
+
+    if openai_key:
+        providers.append(AIProviderConfig(
+            provider_id="openai",
+            provider_type="openai",
+            api_key=openai_key,
+            api_endpoint=os.getenv("OPENAI_API_ENDPOINT", DEFAULT_OPENAI_ENDPOINT),
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            source="env",
+        ))
+
+    # Slower large models
+    if nvidia_nim_key:
+        providers.append(AIProviderConfig(
+            provider_id="nvidia-nim",
+            provider_type="openai-compat",
+            api_key=nvidia_nim_key,
+            api_endpoint=os.getenv("NVIDIA_NIM_API_ENDPOINT", "https://integrate.api.nvidia.com/v1"),
+            model=os.getenv("NVIDIA_NIM_MODEL", "nvidia/llama-3.1-nemotron-70b-instruct"),
+            source="env",
+        ))
+
     if anthropic_key:
-        return AIProviderConfig(
+        providers.append(AIProviderConfig(
             provider_id="anthropic",
             provider_type="anthropic",
             api_key=anthropic_key,
             api_endpoint=os.getenv("ANTHROPIC_API_ENDPOINT", DEFAULT_ANTHROPIC_ENDPOINT),
             model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
             source="env",
-        )
+        ))
 
-    return None
+    return providers
 
 
 def _from_opencode() -> AIProviderConfig | None:
@@ -311,32 +367,37 @@ def _loads_json_object(text: str) -> dict[str, Any]:
 
 
 def generate_json(system_prompt: str, user_payload: dict[str, Any], fallback: dict[str, Any]) -> dict[str, Any]:
-    config = get_provider_config()
-    if config is None:
-        return {**fallback, "ai_provider": "fallback", "ai_used": False}
+    providers = _get_all_available_providers()
+    if not providers:
+        return {**fallback, "ai_provider": "none", "ai_used": False, "ai_error": "No AI providers configured"}
 
     user_prompt = (
         "Return only valid JSON. Use this input payload:\n"
         f"{json.dumps(user_payload, ensure_ascii=True, indent=2)}"
     )
 
-    try:
-        if config.provider_type == "openai":
-            text = _call_openai_responses(config, system_prompt, user_prompt)
-        elif config.provider_type in {"openai-compat", "google"}:
-            text = _call_openai_compatible(config, system_prompt, user_prompt)
-        elif config.provider_type == "anthropic":
-            text = _call_anthropic_compatible(config, system_prompt, user_prompt)
-        else:
-            raise AIGatewayError(f"Unsupported AI provider type: {config.provider_type}")
+    errors = []
 
-        parsed = _loads_json_object(text)
-        result = {**fallback, **parsed}
-        result.setdefault("ai_provider", config.provider_id)
-        result.setdefault("ai_model", config.model)
-        result["ai_used"] = True
-        return result
-    except Exception as exc:
-        result = {**fallback, "ai_provider": config.provider_id, "ai_used": False}
-        result["ai_error"] = str(exc)
-        return result
+    for config in providers:
+        try:
+            if config.provider_type == "openai":
+                text = _call_openai_responses(config, system_prompt, user_prompt)
+            elif config.provider_type in {"openai-compat", "google"}:
+                text = _call_openai_compatible(config, system_prompt, user_prompt)
+            elif config.provider_type == "anthropic":
+                text = _call_anthropic_compatible(config, system_prompt, user_prompt)
+            else:
+                raise AIGatewayError(f"Unsupported AI provider type: {config.provider_type}")
+
+            parsed = _loads_json_object(text)
+            result = {**fallback, **parsed}
+            result.setdefault("ai_provider", config.provider_id)
+            result.setdefault("ai_model", config.model)
+            result["ai_used"] = True
+            return result
+
+        except Exception as exc:
+            errors.append(f"{config.provider_id}: {exc}")
+            continue
+
+    return {**fallback, "ai_provider": "all_failed", "ai_used": False, "ai_error": "; ".join(errors)}

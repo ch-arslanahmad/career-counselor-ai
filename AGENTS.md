@@ -25,7 +25,7 @@
 | Start frontend | `cd frontend && python3 -m http.server 8000` → open `http://localhost:8000` |
 | Start backend | `cd backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt && uvicorn main:app --reload` |
 | Run both | Use `./run.sh` (shell script in repo root) |
-| Database setup | `backend/scripts/seed_onet.py` (fetches O*NET API, fallback to `backend/seeds/onet_fallback.json`) |
+| Database setup | MariaDB running locally (career_counselor DB). Tables: task_progress, student_assessments, career_fits |
 | Tests | None configured yet (Phase 2 deliverable) |
 
 ---
@@ -33,37 +33,31 @@
 ## Architecture at a Glance
 
 ```
-Frontend (Vanilla JS)  →  FastAPI Backend  →  MySQL Database (O*NET + Custom)
+Frontend (Vanilla JS)  →  FastAPI Backend  →  MariaDB (AI-generated careers/roadmaps)
 ```
 
 - **Frontend**: `frontend/index.html` (2 forms: Career Assessment + Roadmap) + `frontend/js/main.js` (form logic, API calls) + `frontend/css/style.css`
-- **Backend**: `backend/main.py` (FastAPI) + `backend/services/` (business logic, AI integration) + `backend/database.py` (SQLAlchemy ORM)
-- **Database**: 7 tables defined in SPECIFICATION.md Section 1 (careers, skills, career_skills, roadmap_steps, student_assessments, career_fits, task_progress) — all cross-referenced for accurate fit scoring
-- **Data Source**: O*NET public API (services.onetcenter.org) + manual Pakistan career curation + hardcoded fallback seed if API fails
-- **API Endpoints**: Defined in SPECIFICATION.md Section 3 (exact request/response schemas subject to change during implementation, but feature set is locked)
+- **Backend**: `backend/main.py` (FastAPI) + `backend/services/` (AI integration) + `backend/database.py` (SQLAlchemy ORM)
+- **Database**: 3 tables (task_progress, student_assessments, career_fits) — for session tracking only
+- **Data Source**: AI generates careers and roadmaps dynamically (no DB fixtures)
+- **API Endpoints**: `/api/assess`, `/api/roadmap`, `/api/skill-gap-analysis`, `/api/tasks`, `/options/*`
 
 ---
 
 ## Critical Gotchas (Read These!)
 
 ### 1. Specification is Locked
-**What:** `docs/SPECIFICATION.md` freezes all 11 features, DB schema, and API contracts as of May 2026.  
+**What:** Spec freezes features, DB schema, and API contracts as of May 2026.  
 **Why:** No mid-implementation scope creep. All decisions documented with rationale.  
-**Agent action:** If user asks for new features, reference SPECIFICATION.md and push back politely. Defer to Phase 2.
+**Agent action:** If user asks for new features, push back politely. Defer to Phase 2.
 
-### 2. O*NET is Ground Truth, Not the Recommendation Engine
-**What:** Database uses verified O*NET occupation data (skills, growth outlook, education requirements, relationships) — but O*NET itself does NOT provide recommendations. Your code must build the matching algorithm on top.  
-**Why:** O*NET = annotated job encyclopedia. Your scoring logic = takes user profile + O*NET data → ranks careers. Claude/OpenAI = explains results in natural language.  
-**Common mistake:** Treating O*NET as a "recommendation system" when it's actually "structured data for building one."  
-**Agent action:** Career fit scoring (SPECIFICATION.md Feature #1) requires comparing user skills ↔ career required skills (from career_skills table). Use `skill_match` calculation (% of required skills user has) as the core algorithm. Fallback to hardcoded seed if O*NET API unavailable.
-
-### 3. Database Schema is Complex (Cross-Referenced)
-**What:** 8 tables with multi-level relationships (careers → skills via junction table, roadmap_steps linked to career_id, etc.).  
-**Why:** Enables accurate matching and tracking.  
-**Agent action:** Before touching database queries, read schema diagram in SPECIFICATION.md. Common mistake: querying careers without joining career_skills.
+### 2. AI Generates Everything
+**What:** Careers and roadmaps are fully AI-generated, no DB fixtures.  
+**Why:** Dynamic personalization - AI creates careers tailored to user input.  
+**Agent action:** If AI is unavailable, endpoints return 503 (no fallback fixtures).
 
 ### 4. Frontend Must Call Backend API (Not Mock Data)
-**What:** `frontend/js/main.js` must POST to `/api/assess`, `/api/roadmap`, `/api/cv-analyze` (defined in SPECIFICATION.md Section 4).  
+**What:** `frontend/js/main.js` must POST to `/api/assess`, `/api/roadmap`, `/api/skill-gap-analysis` (defined in SPECIFICATION.md Section 4).  
 **Why:** Single source of truth. Mock data only for fallback if API is down.  
 **Agent action:** Frontend tests should use real backend or mock API responses (not hardcoded data).
 
