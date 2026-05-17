@@ -579,10 +579,19 @@ function renderCareerRecommendations(payload) {
       const skillsBlock = document.createElement("div");
       skillsBlock.className = "required-skills";
 
-      const skillsHeading = document.createElement("h5");
-      skillsHeading.textContent = "Skill gaps";
+      const matchedHeading = document.createElement("h5");
+      matchedHeading.className = "skill-heading matched";
+      matchedHeading.textContent = "Matched";
 
-      const skillsList = createChipList([
+      const matchedList = createChipList([
+        ...(career.matched_skills || []),
+      ].filter(Boolean));
+
+      const gapsHeading = document.createElement("h5");
+      gapsHeading.className = "skill-heading gaps";
+      gapsHeading.textContent = "Gaps to fill";
+
+      const gapsList = createChipList([
         ...(career.missing_skills || []),
       ].filter(Boolean));
 
@@ -592,8 +601,10 @@ function renderCareerRecommendations(payload) {
       roadmapBtn.dataset.careerTitle = career.career_name;
       roadmapBtn.textContent = "Create Roadmap";
 
-      skillsBlock.appendChild(skillsHeading);
-      skillsBlock.appendChild(skillsList);
+      skillsBlock.appendChild(matchedHeading);
+      skillsBlock.appendChild(matchedList);
+      skillsBlock.appendChild(gapsHeading);
+      skillsBlock.appendChild(gapsList);
 
       card.appendChild(match);
       card.appendChild(title);
@@ -610,25 +621,7 @@ function renderCareerRecommendations(payload) {
   }
 
   if (skillGapsCard) {
-    const topCareer = topCareers[0];
-    skillGapsCard.hidden = false;
-    if (skillGapsContent) {
-      skillGapsContent.innerHTML = "";
-
-      if (topCareer) {
-        const heading = document.createElement("h3");
-        heading.textContent = `Precision Match: ${topCareer.career_name}`;
-
-        const paragraph = document.createElement("p");
-        paragraph.textContent = topCareer.reasoning;
-
-        const chipList = createChipList(topCareer.missing_skills || []);
-
-        skillGapsContent.appendChild(heading);
-        skillGapsContent.appendChild(paragraph);
-        skillGapsContent.appendChild(chipList);
-      }
-    }
+    skillGapsCard.hidden = true;
   }
 }
 

@@ -52,21 +52,47 @@ def _score_career(fixture: dict, request: CareerAssessRequest) -> dict:
     required_normalized = [skill.lower() for skill in required_skills]
 
     matches = [skill for skill in required_normalized if skill in request_skills]
-    skill_match = round(len(matches) / len(required_normalized), 2) if required_normalized else 0.0
-    fit_score = min(98, int(55 + (skill_match * 35) + (10 if request.education_level else 0)))
+    match_count = len(matches)
+    total = len(required_normalized)
+    skill_match = round(match_count / total, 2) if total else 0.0
 
-    missing = [skill for skill in required_skills if skill.lower() not in request_skills]
-    reasoning = (
-        f"You match {len(matches)} of {len(required_skills)} required skills. "
-        f"Missing focus areas: {', '.join(missing) if missing else 'none'}. "
-        f"This role fits your interest in {request.education_level or 'practical learning'}."
-    )
+    base = 15
+    skill_weight = int(skill_match * 70)
+    education_bonus = 8 if request.education_level else 0
+    fit_score = min(99, base + skill_weight + education_bonus)
+
+    matched_skills_display = [
+        required_skills[i] for i, s in enumerate(required_normalized) if s in request_skills
+    ]
+    missing = [
+        required_skills[i] for i, s in enumerate(required_normalized) if s not in request_skills
+    ]
+
+    if match_count == total:
+        reasoning = (
+            f"You already have all {total} core skills for this role. "
+            f"Your background in {request.education_level or 'this area'} aligns well. "
+            f"Focus on building real projects to strengthen your application."
+        )
+    elif match_count >= total / 2:
+        reasoning = (
+            f"Strong foundation — you match {match_count} of {total} required skills. "
+            f"Closing the remaining gaps ({', '.join(missing[:3])}) "
+            f"will make you a competitive candidate."
+        )
+    else:
+        reasoning = (
+            f"You match {match_count} of {total} key skills for this path. "
+            f"Start with: {', '.join(missing[:3])}. "
+            f"These are the highest-impact areas to learn first."
+        )
 
     return {
         "career_id": fixture["id"],
         "career_name": fixture["name"],
         "fit_score": fit_score,
         "skill_match": skill_match,
+        "matched_skills": matched_skills_display,
         "missing_skills": missing,
         "reasoning": reasoning,
         "growth_outlook": fixture["growth_outlook"],

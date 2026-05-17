@@ -449,6 +449,25 @@ li {
   margin-top: var(--space-lg);
 }
 
+.skill-heading {
+  font-size: var(--text-sm);
+  margin: 8px 0 4px;
+  font-family: var(--font-mono);
+}
+
+.skill-heading.matched {
+  color: var(--color-success);
+}
+
+.skill-heading.gaps {
+  color: var(--color-error);
+}
+
+.required-skills .chips-list .chip {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
 .create-roadmap-btn {
   margin-top: var(--space-md);
   padding: 14px 28px;
