@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from database import SQLALCHEMY_AVAILABLE
-from fallback_data import get_fallback_options
 from models import Career, CareerSkill, Skill, RoadmapStep
 
 
@@ -13,7 +12,7 @@ def _session_ready(db: Any | None) -> bool:
 
 def get_form_options(db: Any | None = None) -> dict[str, list[str]]:
     if not _session_ready(db):
-        return get_fallback_options()
+        return {"skills": [], "interests": [], "industries": [], "locations": []}
 
     skills = [skill.name for skill in db.query(Skill).order_by(Skill.name).all() if skill.name]
     categories = [
@@ -26,13 +25,13 @@ def get_form_options(db: Any | None = None) -> dict[str, list[str]]:
         if row[0]
     ]
     if not categories:
-        categories = get_fallback_options()["interests"]
+        categories = []
 
     return {
-        "skills": skills or get_fallback_options()["skills"],
+        "skills": skills or [],
         "interests": categories,
         "industries": categories,
-        "locations": get_fallback_options()["locations"],
+        "locations": [],
     }
 
 

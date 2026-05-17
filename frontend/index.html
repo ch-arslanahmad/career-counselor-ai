@@ -169,93 +169,24 @@
           </form>
         </div>
         <!-- Career Output -->
-        <div id="career-output" class="output-section">
+        <div id="career-output" class="output-section" hidden>
           <h2 class="response-heading">Your Career Matches</h2>
           <p class="output-paragraph">
-            Based on your skill profile, interests, and professional history,
-            we've identified high-growth opportunities that align with your
-            trajectory.
+            Results will appear here after you submit the assessment.
           </p>
-          <div id="career-recommendation-panel" class="career-recommendation-panel">
-            <div class="card-list" id="career-cards">
-              <div class="card">
-                <div class="match chip">% Match</div>
-
-                <h3 class="career-path">Product Growth Lead</h3>
-
-                <div class="chip job-type">OPEN</div>
-
-                <p class="career-description">
-                  Spearhead product growth initiatives, leveraging data-driven
-                  strategies to optimize user acquisition and retention.
-                </p>
-
-                <div class="required-skills">
-                  <h5>Required Skills:</h5>
-                  <ul class="chips-list">
-                    <li class="chip">Growth Hacking</li>
-                    <li class="chip">Data Analysis</li>
-                    <li class="chip">SEO & SEM</li>
-                    <li class="chip">Conversion Rate Optimization</li>
-                  </ul>
-                </div>
-                <button
-                  type="button"
-                  class="create-roadmap-btn"
-                  data-career-title="Product Growth Lead">
-                  Create Roadmap
-                </button>
-              </div>
-
-              <div class="card">
-                <div class="match chip">% Match</div>
-
-                <h3 class="career-path">Product Growth Lead</h3>
-
-                <div class="chip job-type">OPEN</div>
-
-                <p class="career-description">
-                  Spearhead product growth initiatives, leveraging data-driven
-                  strategies to optimize user acquisition and retention.
-                </p>
-
-                <div class="required-skills">
-                  <h5>Required Skills:</h5>
-                  <ul class="chips-list">
-                    <li class="chip">Growth Hacking</li>
-                    <li class="chip">Data Analysis</li>
-                    <li class="chip">SEO & SEM</li>
-                    <li class="chip">Conversion Rate Optimization</li>
-                  </ul>
-                </div>
-                <button
-                  type="button"
-                  class="create-roadmap-btn"
-                  data-career-title="Product Growth Lead">
-                  Create Roadmap
-                </button>
-              </div>
-              <!-- put 2 more here -->
-            </div>
-            <!-- skill gap analysis (if applicable) -->
-            <div id="skill-gaps" class="skill-gaps-section card">
-              <h3>Precision Match: Technical Product Manager</h3>
-              <p>
-                Our AI detected a strong correlation between your recent 'Data
-                Visualization' project and high-tier roles in Fintech operations.
-                You are only 3 skills away from a 98% match.
-              </p>
-              <div class="buttons">
-                <button type="button" class="analyze-button" id="open-skills-modal">
-                  Analyze Skills
-                </button>
-                <button
-                  type="button"
-                  class="hide-recommendation bordered-button"
-                  id="hide-recommendation">
-                  Hide Recommendation
-                </button>
-              </div>
+          <div id="career-recommendation-panel" class="card-list"></div>
+          <div id="skill-gaps" class="skill-gaps-section card" hidden>
+            <div id="skill-gaps-content"></div>
+            <div class="buttons">
+              <button type="button" class="analyze-button" id="open-skills-modal">
+                Analyze Skills
+              </button>
+              <button
+                type="button"
+                class="hide-recommendation bordered-button"
+                id="hide-recommendation">
+                Hide Recommendation
+              </button>
             </div>
           </div>
         </div>
@@ -348,23 +279,7 @@
 
           <div class="roadmap-now-section">
             <h3>What to do right now</h3>
-            <div id="roadmap-immediate-steps" class="roadmap-now-grid">
-              <article class="roadmap-now-item">
-                <div class="roadmap-now-index">1</div>
-                <h4>API Fundamentals Sprint</h4>
-                <p>Practice REST design, HTTP status codes, and request validation.</p>
-              </article>
-              <article class="roadmap-now-item">
-                <div class="roadmap-now-index">2</div>
-                <h4>Database Query Practice</h4>
-                <p>Write joins, aggregates, and indexing exercises on real datasets.</p>
-              </article>
-              <article class="roadmap-now-item">
-                <div class="roadmap-now-index">3</div>
-                <h4>Mini Portfolio Backend</h4>
-                <p>Ship one CRUD API project with auth and clean documentation.</p>
-              </article>
-            </div>
+            <div id="roadmap-immediate-steps" class="roadmap-now-grid"></div>
           </div>
 
           <div class="roadmap-custom-checklist">
@@ -387,151 +302,16 @@
               <div class="roadmap-phase-marker">✓</div>
               <div class="roadmap-phase-content">
                 <div class="roadmap-phase-head">
-                  <h4>Phase 1: Backend Foundations</h4>
+                  <h4>Loading roadmap...</h4>
                   <div class="roadmap-phase-chips">
-                    <span class="chip">Completed</span>
-                    <span class="chip">2 months</span>
+                    <span class="chip">Waiting</span>
                   </div>
                 </div>
-                <p>
-                  Completed core Python, FastAPI basics, and clean API structure.
-                </p>
-                <ul class="roadmap-task-list">
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" checked />
-                      <span class="roadmap-task-text">Set up project structure and folder standards</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" checked />
-                      <span class="roadmap-task-text">Build first FastAPI CRUD endpoint</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" checked />
-                      <span class="roadmap-task-text">Validate request/response schema patterns</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
-            </article>
-
-            <article class="roadmap-phase current">
-              <div class="roadmap-phase-marker"></div>
-              <div class="roadmap-phase-content">
-                <div class="roadmap-phase-head">
-                  <h4>Phase 2: Data & Service Integration</h4>
-                  <div class="roadmap-phase-chips">
-                    <span class="chip job-type">In Progress</span>
-                    <span class="chip">3 months</span>
-                  </div>
-                </div>
-                <p>
-                  Build strong SQL habits, connect APIs to database models, and improve
-                  backend reliability with proper validation and error design.
-                </p>
-                <ul class="roadmap-task-list">
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Write joins for careers, skills, and mappings</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Connect ORM models to API routes</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Add clear validation and error responses</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
-            </article>
-
-            <article class="roadmap-phase">
-              <div class="roadmap-phase-marker"></div>
-              <div class="roadmap-phase-content">
-                <div class="roadmap-phase-head">
-                  <h4>Phase 3: Advanced API Patterns</h4>
-                  <div class="roadmap-phase-chips">
-                    <span class="chip">Planned</span>
-                    <span class="chip">3 months</span>
-                  </div>
-                </div>
-                <p>
-                  Add authentication, background jobs, pagination, and performance-focused
-                  query design.
-                </p>
-                <ul class="roadmap-task-list">
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Implement JWT/session strategy for protected routes</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Add pagination and filters to list endpoints</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Create async/background processing for long jobs</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
-            </article>
-
-            <article class="roadmap-phase">
-              <div class="roadmap-phase-marker"></div>
-              <div class="roadmap-phase-content">
-                <div class="roadmap-phase-head">
-                  <h4>Phase 4: Production Projects & Deployment</h4>
-                  <div class="roadmap-phase-chips">
-                    <span class="chip">Planned</span>
-                    <span class="chip">4 months</span>
-                  </div>
-                </div>
-                <p>
-                  Deliver polished backend portfolio projects, deploy them, and document
-                  architecture decisions for interviews.
-                </p>
-                <ul class="roadmap-task-list">
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Deploy at least one end-to-end backend service</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Write architecture notes and API usage docs</span>
-                    </label>
-                  </li>
-                  <li class="roadmap-task-item">
-                    <label class="roadmap-task-label">
-                      <input type="checkbox" class="roadmap-task-checkbox" />
-                      <span class="roadmap-task-text">Prepare demo and interview walkthrough stories</span>
-                    </label>
-                  </li>
-                </ul>
+                <p>The API response will replace this placeholder after submission.</p>
               </div>
             </article>
           </div>
         </div>
-      </section>
     </main>
 
     <div id="skills-modal" class="modal" hidden aria-hidden="true">
@@ -550,25 +330,18 @@
         </button>
         <p class="modal-eyebrow">Skills analysis</p>
         <h3 id="skills-modal-title">Skill Gap Overview</h3>
-        <p class="modal-copy">
-          This overlay highlights the fastest gaps to close before applying for
-          the role.
-        </p>
+        <p class="modal-copy" id="skills-modal-copy"></p>
         <div class="modal-grid">
           <article class="modal-summary">
             <h4>Top gaps</h4>
-            <ul>
-              <li>Domain-specific planning and prioritization</li>
-              <li>Stakeholder communication</li>
-              <li>Data-informed decision making</li>
+            <ul id="skills-modal-gap-list">
+              <li>Loading...</li>
             </ul>
           </article>
           <article class="modal-summary">
             <h4>Next actions</h4>
-            <ul>
-              <li>Review the first roadmap step</li>
-              <li>Practice one portfolio project with measurable outcomes</li>
-              <li>Re-run analysis after adding the missing skill</li>
+            <ul id="skills-modal-step-list">
+              <li>Loading...</li>
             </ul>
           </article>
         </div>

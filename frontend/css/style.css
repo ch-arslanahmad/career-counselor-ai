@@ -386,7 +386,7 @@ button.analyze-button:hover {
   background-color: white;
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  margin-bottom: 0;
+  margin-bottom: var(--space-md);
   box-shadow: var(--shadow-soft);
 }
 

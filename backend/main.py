@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import db_health
 from routes.careers import router as careers_router
 from routes.db_options import router as options_router
+from routes.recommendations import router as recommendations_router
 
 app = FastAPI(title="Career Counselor AI Backend")
 
@@ -11,6 +12,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://127.0.0.1:5500",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:8001",
         "http://localhost:8000",
         "http://localhost:8001",
         "http://0.0.0.0:8000",
@@ -21,6 +24,7 @@ app.add_middleware(
 
 app.include_router(options_router)
 app.include_router(careers_router)
+app.include_router(recommendations_router)
 
 
 @app.get("/")

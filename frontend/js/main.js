@@ -25,8 +25,14 @@ class CareerFormOptions {
 
 // --- Utility Functions ---
 
+const API_BASE_URL = "http://localhost:8001";
+
+function buildApiUrl(endpoint) {
+  return `${API_BASE_URL}/${endpoint.replace(/^\/+/, "")}`;
+}
+
 async function getEndpointData(endpoint) {
-  const res = await fetch(`http://localhost:8001/${endpoint}`);
+  const res = await fetch(buildApiUrl(endpoint));
   return await res.json();
 }
 
@@ -34,6 +40,23 @@ const getDataFromEndpoint = async (endpoint) => {
   const data = await getEndpointData(endpoint);
   return data;
 };
+
+async function postEndpointData(endpoint, payload) {
+  const res = await fetch(buildApiUrl(endpoint), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const message = await res.text();
+    throw new Error(message || `Request failed with status ${res.status}`);
+  }
+
+  return await res.json();
+}
 
 // create new chips based on the array of options
 function loadChips(array, container) {
@@ -262,9 +285,21 @@ const roadmapAutofillBtn = document.getElementById("roadmap-autofill-btn");
 const roadmapCustomTaskInput = document.getElementById("roadmap-custom-task-input");
 const roadmapAddTaskBtn = document.getElementById("roadmap-add-task-btn");
 const roadmapCustomTaskList = document.getElementById("roadmap-custom-task-list");
+const careerOutput = document.getElementById("career-output");
+const careerRecommendationPanel = document.getElementById("career-recommendation-panel");
+const skillGapsCard = document.getElementById("skill-gaps");
+const skillGapsContent = document.getElementById("skill-gaps-content");
+const hideRecommendationBtn = document.getElementById("hide-recommendation");
 const skillsModal = document.getElementById("skills-modal");
+const skillsModalTitle = document.getElementById("skills-modal-title");
+const skillsModalCopy = document.getElementById("skills-modal-copy");
+const skillsModalGapList = document.getElementById("skills-modal-gap-list");
+const skillsModalStepList = document.getElementById("skills-modal-step-list");
 const openSkillsModalBtn = document.getElementById("open-skills-modal");
 const modalReanalyzeBtn = document.getElementById("modal-reanalyze");
+let latestCareerAssessment = null;
+let latestCareerSubmission = null;
+let latestSkillGapAnalysis = null;
 
 const careerDummyData = {
   name: "Arslan Ahmad",
@@ -375,11 +410,310 @@ function setupCustomChecklist() {
   });
 }
 
-function openSkillsModal() {
-  if (!skillsModal) return;
+function formatTitle(value) {
+  return String(value || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function clearNode(node) {
+  if (!node) return;
+  node.innerHTML = "";
+}
+
+function createChipList(items = []) {
+  const list = document.createElement("ul");
+  list.className = "chips-list";
+  items.forEach((item) => {
+    const chip = document.createElement("li");
+    chip.className = "chip";
+    chip.textContent = item;
+    list.appendChild(chip);
+  });
+  return list;
+}
+
+function renderListInto(container, items = [], emptyLabel = "No items available") {
+  if (!container) return;
+  clearNode(container);
+
+  const values = items.filter(Boolean);
+  if (!values.length) {
+    const emptyItem = document.createElement("li");
+    emptyItem.textContent = emptyLabel;
+    container.appendChild(emptyItem);
+    return;
+  }
+
+  values.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    container.appendChild(li);
+  });
+}
+
+function renderSkillGapModal(payload) {
+  if (!payload || !skillsModalTitle || !skillsModalCopy) return;
+
+  const gapAnalysis = payload.gap_analysis || {};
+  const title = payload.career_name
+    ? `Skill Gap Overview: ${payload.career_name}`
+    : "Skill Gap Overview";
+  skillsModalTitle.textContent = title;
+  skillsModalCopy.textContent = gapAnalysis.summary || "Skill-gap details will appear here.";
+
+  renderListInto(
+    skillsModalGapList,
+    gapAnalysis.missing_skills || [],
+    "No obvious skill gaps detected.",
+  );
+  renderListInto(
+    skillsModalStepList,
+    payload.immediate_next_steps || [],
+    "No next steps returned yet.",
+  );
+}
+
+function renderCareerRecommendations(payload) {
+  const topCareers = payload.top_3_careers || payload.career_fits || [];
+  latestCareerAssessment = payload;
+
+  if (careerOutput) {
+    careerOutput.hidden = false;
+  }
+
+  if (careerRecommendationPanel) {
+    clearNode(careerRecommendationPanel);
+
+    topCareers.forEach((career, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const match = document.createElement("div");
+      match.className = "match chip";
+      match.textContent = `${career.fit_score}% Match`;
+
+      const title = document.createElement("h3");
+      title.className = "career-path";
+      title.textContent = career.career_name;
+
+      const type = document.createElement("div");
+      type.className = "chip job-type";
+      type.textContent = formatTitle(career.type || "open");
+
+      const description = document.createElement("p");
+      description.className = "career-description";
+      description.textContent = career.reasoning;
+
+      const skillsBlock = document.createElement("div");
+      skillsBlock.className = "required-skills";
+
+      const skillsHeading = document.createElement("h5");
+      skillsHeading.textContent = "Skill gaps";
+
+      const skillsList = createChipList([
+        ...(career.missing_skills || []),
+      ].filter(Boolean));
+
+      const roadmapBtn = document.createElement("button");
+      roadmapBtn.type = "button";
+      roadmapBtn.className = "create-roadmap-btn";
+      roadmapBtn.dataset.careerTitle = career.career_name;
+      roadmapBtn.textContent = "Create Roadmap";
+
+      skillsBlock.appendChild(skillsHeading);
+      skillsBlock.appendChild(skillsList);
+
+      card.appendChild(match);
+      card.appendChild(title);
+      card.appendChild(type);
+      card.appendChild(description);
+      card.appendChild(skillsBlock);
+      card.appendChild(roadmapBtn);
+      careerRecommendationPanel.appendChild(card);
+    });
+  }
+
+  if (careerRecommendationPanel) {
+    careerRecommendationPanel.hidden = false;
+  }
+
+  if (skillGapsCard) {
+    const topCareer = topCareers[0];
+    skillGapsCard.hidden = false;
+    if (skillGapsContent) {
+      skillGapsContent.innerHTML = "";
+
+      if (topCareer) {
+        const heading = document.createElement("h3");
+        heading.textContent = `Precision Match: ${topCareer.career_name}`;
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = topCareer.reasoning;
+
+        const chipList = createChipList(topCareer.missing_skills || []);
+
+        skillGapsContent.appendChild(heading);
+        skillGapsContent.appendChild(paragraph);
+        skillGapsContent.appendChild(chipList);
+      }
+    }
+  }
+}
+
+function buildImmediateStepCard(step, index) {
+  const card = document.createElement("article");
+  card.className = "roadmap-now-item";
+
+  const badge = document.createElement("div");
+  badge.className = "roadmap-now-index";
+  badge.textContent = String(index + 1);
+
+  const title = document.createElement("h4");
+  title.textContent = step.title;
+
+  const description = document.createElement("p");
+  description.textContent = step.description;
+
+  card.appendChild(badge);
+  card.appendChild(title);
+  card.appendChild(description);
+  return card;
+}
+
+function buildRoadmapPhase(step, index) {
+  const article = document.createElement("article");
+  article.className = "roadmap-phase";
+  if (index === 0) {
+    article.classList.add("complete");
+  } else if (index === 1) {
+    article.classList.add("current");
+  }
+
+  const marker = document.createElement("div");
+  marker.className = "roadmap-phase-marker";
+  marker.textContent = index === 0 ? "✓" : String(index + 1);
+
+  const content = document.createElement("div");
+  content.className = "roadmap-phase-content";
+
+  const head = document.createElement("div");
+  head.className = "roadmap-phase-head";
+
+  const title = document.createElement("h4");
+  title.textContent = step.title;
+
+  const chips = document.createElement("div");
+  chips.className = "roadmap-phase-chips";
+
+  const statusChip = document.createElement("span");
+  statusChip.className = "chip job-type";
+  statusChip.textContent = index === 0 ? "Completed" : index === 1 ? "In Progress" : "Planned";
+
+  const durationChip = document.createElement("span");
+  durationChip.className = "chip";
+  durationChip.textContent = step.duration;
+
+  chips.appendChild(statusChip);
+  chips.appendChild(durationChip);
+  head.appendChild(title);
+  head.appendChild(chips);
+
+  const description = document.createElement("p");
+  description.textContent = step.description;
+
+  const resourcesBlock = document.createElement("div");
+  resourcesBlock.className = "required-skills";
+
+  const resourcesHeading = document.createElement("h5");
+  resourcesHeading.textContent = "Resources";
+
+  const resources = createChipList(step.resources || []);
+  resourcesBlock.appendChild(resourcesHeading);
+  resourcesBlock.appendChild(resources);
+
+  content.appendChild(head);
+  content.appendChild(description);
+  content.appendChild(resourcesBlock);
+
+  article.appendChild(marker);
+  article.appendChild(content);
+  return article;
+}
+
+function renderRoadmapResponse(payload) {
+  const targetRole = document.getElementById("roadmap-target-role");
+  const timelineChip = document.getElementById("roadmap-timeline-chip");
+  const levelChip = document.getElementById("roadmap-level-chip");
+  const immediateSteps = document.getElementById("roadmap-immediate-steps");
+  const roadmapSteps = document.getElementById("roadmap-steps");
+  const roadmapOutput = document.getElementById("roadmap-output");
+
+  if (roadmapOutput) {
+    roadmapOutput.hidden = false;
+  }
+
+  if (targetRole) targetRole.textContent = payload.career_name || "Backend Developer";
+  if (timelineChip) timelineChip.textContent = payload.total_duration || "12 months";
+  if (levelChip) {
+    levelChip.textContent = `Current: ${formatTitle(payload.current_level || "beginner")}`;
+  }
+
+  if (immediateSteps) {
+    clearNode(immediateSteps);
+    (payload.what_to_do_right_now || []).forEach((step, index) => {
+      immediateSteps.appendChild(buildImmediateStepCard(step, index));
+    });
+  }
+
+  if (roadmapSteps) {
+    clearNode(roadmapSteps);
+    (payload.steps || []).forEach((step, index) => {
+      roadmapSteps.appendChild(buildRoadmapPhase(step, index));
+    });
+  }
+}
+
+async function openSkillsModal() {
+  if (!skillsModal || !latestCareerAssessment || !latestCareerSubmission) return;
+
   skillsModal.hidden = false;
   skillsModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
+
+  if (latestSkillGapAnalysis) {
+    renderSkillGapModal(latestSkillGapAnalysis);
+    return;
+  }
+
+  if (skillsModalCopy) {
+    skillsModalCopy.textContent = "Loading skill-gap analysis...";
+  }
+  renderListInto(skillsModalGapList, [], "Loading...");
+  renderListInto(skillsModalStepList, [], "Loading...");
+
+  const targetCareer = (latestCareerAssessment.top_3_careers || latestCareerAssessment.career_fits || [])[0];
+  const analysisPayload = {
+    session_id: latestCareerAssessment.session_id || null,
+    target_role: targetCareer?.career_name || latestCareerSubmission.career_topic || "",
+    skills_data: latestCareerSubmission.skills || [],
+    experience: latestCareerSubmission.additional_info || "",
+    education: latestCareerSubmission.education_level || "",
+  };
+
+  try {
+    latestSkillGapAnalysis = await postEndpointData("api/skill-gap-analysis", analysisPayload);
+    renderSkillGapModal(latestSkillGapAnalysis);
+  } catch (error) {
+    console.error("Skill gap analysis request failed:", error);
+    if (skillsModalCopy) {
+      skillsModalCopy.textContent = "Skill-gap analysis failed to load.";
+    }
+    renderListInto(skillsModalGapList, [], "No analysis available.");
+    renderListInto(skillsModalStepList, [], "No recommendations available.");
+  }
 }
 
 function closeSkillsModal() {
@@ -387,6 +721,18 @@ function closeSkillsModal() {
   skillsModal.hidden = true;
   skillsModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
+}
+
+if (hideRecommendationBtn) {
+  hideRecommendationBtn.addEventListener("click", () => {
+    if (careerRecommendationPanel) {
+      careerRecommendationPanel.hidden = true;
+    }
+    if (skillGapsContent) {
+      skillGapsContent.innerHTML = "";
+    }
+    closeSkillsModal();
+  });
 }
 
 if (openSkillsModalBtn) {
@@ -411,20 +757,58 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-careerForm.addEventListener("submit", (e) => {
+careerForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   careerForm.classList.add("submitted");
 
   const userData = buildCareerFormData(careerForm);
-  console.log("Career form input:", userData);
+  latestCareerSubmission = userData;
+
+  try {
+    const response = await postEndpointData("api/assess", {
+      interests: userData.interests,
+      skills: userData.skills,
+      education_level: userData.education_level,
+      career_goals: userData.career_goals ? [userData.career_goals] : [],
+      location: userData.country,
+      notes: userData.additional_info,
+    });
+
+    localStorage.setItem("career-counselor-session-id", response.session_id);
+    renderCareerRecommendations(response);
+  } catch (error) {
+    console.error("Career recommendation request failed:", error);
+    alert("Career recommendation request failed. Check the backend and try again.");
+  }
 });
 
-roadmapForm.addEventListener("submit", (e) => {
+roadmapForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   roadmapForm.classList.add("submitted");
 
   const roadmapData = buildRoadmapFormData(roadmapForm);
-  console.log("Roadmap form input:", roadmapData);
+  const sessionId = localStorage.getItem("career-counselor-session-id") || null;
+  const timelineHoursMap = {
+    "3months": 20,
+    "6months": 12,
+    "1year": 8,
+    "2years": 5,
+    "5years": 3,
+  };
+
+  try {
+    const response = await postEndpointData("api/roadmap", {
+      session_id: sessionId,
+      career_topic: roadmapData.career_topic,
+      timeline_hours_per_week: timelineHoursMap[roadmapData.timeline] || 10,
+      current_level: roadmapData.current_status,
+    });
+
+    renderRoadmapResponse(response);
+  } catch (error) {
+    console.error("Roadmap request failed:", error);
+    alert("Roadmap request failed. Check the backend and try again.");
+  }
 });
 
 careerAutofillBtn.addEventListener("click", () => {
@@ -516,21 +900,6 @@ function generateMockRecommendations(data) {
   ];
 
   return mockRecommendations;
-}
-
-// Create Recommendation Card HTML
-function createRecommendationCard(rec) {
-  return `
-    <div class="card">
-      <h4>${rec.title}</h4>
-      <p>${rec.description}</p>
-      <p><strong>Why this fits you:</strong> ${rec.reasoning}</p>
-      <span class="match-score">${rec.matchScore} Match</span>
-      <button type="button" class="create-roadmap-btn" data-career-title="${rec.title}">
-        Create Roadmap
-      </button>
-    </div>
-  `;
 }
 
 // -- TESTING
