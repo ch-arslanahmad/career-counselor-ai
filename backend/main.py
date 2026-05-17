@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import db_health
 from routes.careers import router as careers_router
 from routes.db_options import router as options_router
+from routes.recommendations import router as recommendations_router
 
 app = FastAPI(title="Career Counselor AI Backend")
 
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(options_router)
 app.include_router(careers_router)
+app.include_router(recommendations_router)
 
 
 @app.get("/")
