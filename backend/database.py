@@ -13,7 +13,7 @@ try:
     from sqlalchemy.orm import declarative_base, sessionmaker
 
     SQLALCHEMY_AVAILABLE = True
-except ImportError:  # pragma: no cover - handled at runtime
+except ImportError:
     create_engine = None
     text = None
     sessionmaker = None
@@ -35,7 +35,7 @@ if SQLALCHEMY_AVAILABLE:
         future=True,
     )
     Base = declarative_base()
-else:  # pragma: no cover - used only when dependencies are missing
+else:
     engine = None
     SessionLocal = None
     Base = None
@@ -72,7 +72,7 @@ def db_health() -> tuple[bool, str]:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         return True, "Database connection is healthy."
-    except Exception as exc:  # pragma: no cover - depends on local MariaDB state
+    except Exception as exc:
         return False, str(exc)
 
 
@@ -83,4 +83,3 @@ def init_db() -> None:
     import models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
-

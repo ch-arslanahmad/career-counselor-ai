@@ -10,56 +10,26 @@ def _session_ready(db: Any | None) -> bool:
     return bool(SQLALCHEMY_AVAILABLE and db is not None)
 
 
-_FALLBACK_OPTIONS: dict[str, list[str]] = {
-    "skills": [
-        "Python", "JavaScript", "TypeScript", "Java", "C++", "SQL",
-        "React", "Node.js", "FastAPI", "Django", "HTML/CSS", "Git",
-        "Docker", "AWS", "Linux", "Data Analysis", "Machine Learning",
-        "Excel", "Figma", "UI Design", "User Research", "Prototyping",
-        "Project Management", "Communication", "Public Speaking",
-        "Leadership", "Critical Thinking", "Problem Solving",
-    ],
-    "interests": [
-        "Technology", "Design", "Business", "Healthcare", "Education",
-        "Finance", "Data Science", "AI/ML", "Web Development",
-        "Mobile Apps", "Cloud Computing", "Cybersecurity",
-        "UI/UX Design", "Product Management", "Entrepreneurship",
-    ],
-    "industries": [
-        "Information Technology", "Healthcare", "Education",
-        "Finance/Banking", "E-commerce", "Telecommunications",
-        "Government", "Consulting", "Manufacturing", "Media",
-    ],
-    "locations": [
-        "Pakistan", "USA", "UK", "Canada", "Australia", "Germany",
-        "UAE", "Saudi Arabia", "Remote", "Other",
-    ],
-}
-
-
 def get_form_options(db: Any | None = None) -> dict[str, list[str]]:
     if not _session_ready(db):
-        return _FALLBACK_OPTIONS
+        return {"skills": [], "interests": [], "industries": [], "locations": []}
 
-    try:
-        skills = [skill.name for skill in db.query(Skill).order_by(Skill.name).all() if skill.name]
-        categories = [
-            row[0]
-            for row in db.query(Career.category)
-            .filter(Career.category.isnot(None))
-            .distinct()
-            .order_by(Career.category)
-            .all()
-            if row[0]
-        ]
-    except Exception:
-        return _FALLBACK_OPTIONS
+    skills = [skill.name for skill in db.query(Skill).order_by(Skill.name).all() if skill.name]
+    categories = [
+        row[0]
+        for row in db.query(Career.category)
+        .filter(Career.category.isnot(None))
+        .distinct()
+        .order_by(Career.category)
+        .all()
+        if row[0]
+    ]
 
     return {
-        "skills": skills or _FALLBACK_OPTIONS["skills"],
-        "interests": categories or _FALLBACK_OPTIONS["interests"],
-        "industries": categories or _FALLBACK_OPTIONS["industries"],
-        "locations": _FALLBACK_OPTIONS["locations"],
+        "skills": skills,
+        "interests": categories,
+        "industries": categories,
+        "locations": [],
     }
 
 
@@ -76,7 +46,6 @@ def list_careers(db: Any | None = None) -> list[dict]:
             "category": career.category,
             "type": career.type,
             "growth_outlook": career.growth_outlook,
-            "source": career.source,
             "education_requirement": career.education_requirement,
         }
         for career in rows

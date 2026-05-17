@@ -16,7 +16,7 @@ try:
         UniqueConstraint,
     )
     from sqlalchemy.orm import Mapped, mapped_column, relationship
-except ImportError:  # pragma: no cover - handled at runtime
+except ImportError:
     JSON = Boolean = DateTime = Enum = Float = ForeignKey = Integer = String = Text = None
     UniqueConstraint = None
     Mapped = mapped_column = relationship = None
@@ -41,10 +41,6 @@ if Base is not None:
             nullable=True,
         )
         growth_outlook: Mapped[str | None] = mapped_column(String(100), nullable=True)
-        source: Mapped[str | None] = mapped_column(
-            Enum("onet", "custom", name="career_source"),
-            nullable=True,
-        )
         education_requirement: Mapped[str | None] = mapped_column(String(200), nullable=True)
         created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
         updated_at: Mapped[datetime] = mapped_column(
@@ -212,7 +208,7 @@ if Base is not None:
         created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
 
 
-else:  # pragma: no cover - used only when dependencies are missing
+else:
     Career = None
     Skill = None
     CareerSkill = None
@@ -220,4 +216,3 @@ else:  # pragma: no cover - used only when dependencies are missing
     StudentAssessment = None
     CareerFit = None
     TaskProgress = None
-
