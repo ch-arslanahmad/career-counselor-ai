@@ -1,0 +1,121 @@
+@startuml
+title Career Counselor AI — Class Diagram
+
+class User {
+  +id: int
+  +username: varchar(100)
+  +password: varchar(255) [SHA-256 hash]
+  +created_at: datetime
+}
+
+class AssessmentHistory {
+  +id: int
+  +user_id: int [FK]
+  +session_id: varchar(36)
+  +name: varchar(100)
+  +interests: json
+  +skills: json
+  +education_level: varchar(100)
+  +career_goals: json
+  +location: varchar(100)
+  +notes: text
+  +career_results: json
+  +created_at: datetime
+}
+
+class UserProgress {
+  +id: int
+  +user_id: int [FK]
+  +session_id: varchar(36)
+  +career_topic: varchar(255)
+  +step_id: int
+  +step_title: varchar(255)
+  +completed: boolean
+  +completed_at: datetime
+  +created_at: datetime
+}
+
+class StudentAssessment {
+  +id: int
+  +session_id: varchar(36) [UQ]
+  +created_at: datetime
+  +interests: json
+  +current_skills: json
+  +education_level: varchar(100)
+  +career_goals: json
+  +location: varchar(100)
+  +notes: text
+  +updated_at: datetime
+  --
+  +get_career_fits(): list
+}
+
+class CareerFit {
+  +id: int
+  +assessment_id: int [FK]
+  +career_id: int
+  +career_name: varchar(255)
+  +fit_score: int [0-99]
+  +skill_match: float
+  +reasoning: text
+  +matched_skills: json
+  +missing_skills: json
+  +created_at: datetime
+}
+
+class TaskProgress {
+  +id: int
+  +session_id: varchar(36)
+  +step_id: int
+  +step_title: varchar(255)
+  +completed_at: datetime
+  +created_at: datetime
+}
+
+class AIGateway {
+  +get_provider_config(): dict
+  +get_ai_status(): dict
+  +generate_json(sys_prompt, payload, fallback): dict
+  --
+  -_get_all_available_providers()
+  -_generate_json_parallel()
+}
+
+class FastAPIApp {
+  -- Health & Config --
+  +GET /
+  +GET /ping
+  +GET /db/health
+  -- Core Assessment --
+  +POST /api/assess
+  +POST /api/roadmap
+  +POST /api/skill-gap-analysis
+  -- Task Management --
+  +POST /api/tasks
+  +GET /api/tasks/{session_id}
+  -- History --
+  +GET /api/history
+  +DELETE /api/history/{id}
+  -- Authentication --
+  +POST /api/auth/register
+  +POST /api/auth/login
+  +GET /api/auth/me
+  -- Form Options --
+  +GET /options/skills
+  +GET /options/interests
+  +GET /options/industries
+  +GET /options/locations
+  -- AI Diagnostics --
+  +GET /api/ai/status
+  +POST /api/ai/test
+}
+
+User "1" --> "*" AssessmentHistory : has_many
+User "1" --> "*" UserProgress : tracks_progress
+StudentAssessment "1" --> "0..*" CareerFit : generates
+StudentAssessment "1" --> "0..*" TaskProgress : tracks_tasks
+FastAPIApp --> AIGateway : uses
+FastAPIApp --> StudentAssessment : persists
+FastAPIApp --> User : authenticates
+
+@enduml
