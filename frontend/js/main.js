@@ -440,6 +440,30 @@ function isOtherChip(chip) {
   return value === "other" || value === "others";
 }
 
+// Constraint limits for chip selections
+const CHIP_CONSTRAINTS = {
+  "interests-chips": { min: 2, max: 5 },
+  "skills-chips": { min: 2, max: 5 },
+  "industries-chips": { min: 1, max: 2 },
+};
+
+// Helper function to validate chip selection constraints
+function validateChipConstraint(container) {
+  const containerId = container.id;
+  const constraint = CHIP_CONSTRAINTS[containerId];
+  if (!constraint) return true;
+
+  const selectedCount = container.querySelectorAll(".chip.selected").length;
+  return selectedCount >= constraint.min && selectedCount <= constraint.max;
+}
+
+// Helper to get constraint message
+function getChipConstraintMessage(containerId) {
+  const constraint = CHIP_CONSTRAINTS[containerId];
+  if (!constraint) return "";
+  return `Select between ${constraint.min} and ${constraint.max} options`;
+}
+
 // () => means an arrow function, called an anonymous function, used with event handler
 document.querySelectorAll(".chips").forEach((container) => {
   container.addEventListener("click", (e) => {
@@ -447,14 +471,43 @@ document.querySelectorAll(".chips").forEach((container) => {
 
     if (!chip) return;
 
-    chip.classList.toggle("selected");
+    const containerId = container.id;
+    const constraint = CHIP_CONSTRAINTS[containerId];
+    const isCurrentlySelected = chip.classList.contains("selected");
+    const selectedCount = container.querySelectorAll(".chip.selected").length;
+
+    // Check if deselecting (always allow)
+    if (isCurrentlySelected) {
+      chip.classList.remove("selected");
+    } else if (constraint && selectedCount >= constraint.max) {
+      // Check max constraint before selecting
+      const field = container.closest(".field");
+      if (field) {
+        const legend = field.querySelector("legend");
+        if (legend) {
+          const existingError = field.querySelector(".chip-error-msg");
+          if (existingError) existingError.remove();
+
+          const errorMsg = document.createElement("div");
+          errorMsg.className = "chip-error-msg";
+          errorMsg.textContent = `Maximum ${constraint.max} selection${constraint.max > 1 ? "s" : ""} allowed`;
+          field.appendChild(errorMsg);
+
+          setTimeout(() => errorMsg.remove(), 3000);
+        }
+      }
+      return; // Don't select the chip
+    } else {
+      chip.classList.add("selected");
+    }
 
     if (isOtherChip(chip)) {
       const wrapper = chip
         .closest(".field")
         .querySelector(".chip-input-wrapper"); // find the input wrapper within the same field
       if (wrapper) {
-        const isVisible = wrapper.classList.toggle("visible");
+        const isVisible = chip.classList.contains("selected");
+        wrapper.classList.toggle("visible", isVisible);
         const input = wrapper.querySelector("input");
         if (input) {
           input.required = isVisible;
@@ -1402,6 +1455,24 @@ careerForm.addEventListener("submit", async (e) => {
   careerForm.classList.add("submitted");
   hideErrorBanner();
   hideInlineError(careerError);
+
+  // Validate chip constraints before submission
+  const interestsContainer = careerForm.querySelector("#interests-chips");
+  const skillsContainer = careerForm.querySelector("#skills-chips");
+  const industriesContainer = careerForm.querySelector("#industries-chips");
+
+  const interestsValid = validateChipConstraint(interestsContainer);
+  const skillsValid = validateChipConstraint(skillsContainer);
+  const industriesValid = validateChipConstraint(industriesContainer);
+
+  if (!interestsValid || !skillsValid || !industriesValid) {
+    let errorMsg = "Please fix the following:\n";
+    if (!interestsValid) errorMsg += "- Interests: Select between 2 and 5 options\n";
+    if (!skillsValid) errorMsg += "- Skills: Select between 2 and 5 options\n";
+    if (!industriesValid) errorMsg += "- Industries: Select between 1 and 2 options\n";
+    showErrorBanner(errorMsg);
+    return;
+  }
 
   const userData = buildCareerFormData(careerForm);
   latestCareerSubmission = userData;
