@@ -370,14 +370,18 @@ def _loads_json_object(text: str) -> dict[str, Any]:
 async def _call_single_provider(
     config: AIProviderConfig, system_prompt: str, user_prompt: str, fallback: dict[str, Any]
 ) -> tuple[dict[str, Any] | None, str]:
-    """Call a single provider asynchronously. Returns (result, provider_id) or (None, provider_id) on failure."""
+    """Call a single provider asynchronously. Returns (result, provider_id) or (None, provider_id) on failure.
+    
+    Uses asyncio.to_thread() to run blocking urllib calls in a thread pool,
+    enabling true parallel execution across providers.
+    """
     try:
         if config.provider_type == "openai":
-            text = _call_openai_responses(config, system_prompt, user_prompt)
+            text = await asyncio.to_thread(_call_openai_responses, config, system_prompt, user_prompt)
         elif config.provider_type in {"openai-compat", "google"}:
-            text = _call_openai_compatible(config, system_prompt, user_prompt)
+            text = await asyncio.to_thread(_call_openai_compatible, config, system_prompt, user_prompt)
         elif config.provider_type == "anthropic":
-            text = _call_anthropic_compatible(config, system_prompt, user_prompt)
+            text = await asyncio.to_thread(_call_anthropic_compatible, config, system_prompt, user_prompt)
         else:
             raise AIGatewayError(f"Unsupported AI provider type: {config.provider_type}")
 

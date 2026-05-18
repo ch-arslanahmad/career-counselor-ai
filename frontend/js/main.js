@@ -1,5 +1,19 @@
 // main.js - Handles form submission and dynamic content generation
 
+import {
+  getCurrentUserId,
+  readLocalHistory,
+  writeLocalHistory,
+  upsertLocalAssessment,
+  updateLocalAssessmentSession,
+  updateLocalProgress,
+} from "./modules/storage.js";
+import {
+  getEndpointData,
+  getDataFromEndpoint,
+  postEndpointData,
+} from "./modules/api.js";
+
 // Dummy Data for Testing
 
 // class for holding option lists from the API
@@ -65,7 +79,6 @@ function updateAuthUI() {
     if (logoutBtn) logoutBtn.classList.remove("hidden");
     if (headerLoginBtn) headerLoginBtn.classList.add("hidden");
     if (headerLogoutBtn) headerLogoutBtn.classList.remove("hidden");
-    if (historyTab) historyTab.classList.remove("hidden");
   } else {
     if (userDisplay) userDisplay.classList.add("hidden");
     if (headerUserDisplay) headerUserDisplay.classList.add("hidden");
@@ -73,14 +86,8 @@ function updateAuthUI() {
     if (logoutBtn) logoutBtn.classList.add("hidden");
     if (headerLoginBtn) headerLoginBtn.classList.remove("hidden");
     if (headerLogoutBtn) headerLogoutBtn.classList.add("hidden");
-    if (historyTab) historyTab.classList.add("hidden");
-    const activeTab = document.querySelector(".tab.active");
-    if (activeTab && activeTab.id === "tab-history") {
-      document.getElementById("tab-career").classList.add("active");
-      document.getElementById("career").classList.add("active");
-      document.getElementById("history").classList.remove("active");
-    }
   }
+  if (historyTab) historyTab.classList.remove("hidden");
 }
 
 if (loginBtn) {
@@ -250,6 +257,8 @@ async function loadHistory() {
             <h4>${a.name || "Assessment"} - ${a.created_at ? new Date(a.created_at).toLocaleDateString() : ""}</h4>
             <p>Top careers: ${(a.top_careers || []).join(", ")}</p>
             <p class="history-skills">Skills: ${(a.skills || []).join(", ")}</p>
+            ${a.roadmap && a.roadmap.career_name ? `<p>Saved roadmap: ${a.roadmap.career_name}</p>` : ""}
+            ${a.skill_gap_analysis && a.skill_gap_analysis.career_name ? `<p>Skill gap analysis: ${a.skill_gap_analysis.career_name}</p>` : ""}
           </div>
         `).join("");
       }
@@ -287,77 +296,38 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 updateAuthUI();
 
-function getCurrentUserId() {
-  const user = localStorage.getItem("career-counselor-user");
-  return user ? JSON.parse(user).user_id : null;
+function saveDemoCareerHistory() {
+  localStorage.setItem("career-counselor-session-id", demoCareerOutput.session_id);
+  upsertLocalAssessment({
+    session_id: demoCareerOutput.session_id,
+    name: careerDummyData.name,
+    interests: careerDummyData.interests,
+    skills: careerDummyData.skills,
+    education_level: careerDummyData.education_level,
+    career_goals: [careerDummyData.goals],
+    location: careerDummyData.location,
+    notes: careerDummyData.notes,
+    career_fits: demoCareerOutput.career_fits,
+    top_careers: demoCareerOutput.top_3_careers,
+  });
 }
 
-const LOCAL_HISTORY_KEY = "career-counselor-local-history";
-
-function readLocalHistory() {
-  try {
-    const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
-    if (!raw) return { assessments: [], progress: [] };
-    const parsed = JSON.parse(raw);
-    return {
-      assessments: Array.isArray(parsed.assessments) ? parsed.assessments : [],
-      progress: Array.isArray(parsed.progress) ? parsed.progress : [],
-    };
-  } catch (err) {
-    return { assessments: [], progress: [] };
-  }
-}
-
-function writeLocalHistory(history) {
-  localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(history));
-}
-
-function upsertLocalAssessment(entry) {
-  const history = readLocalHistory();
-  const nextEntry = {
-    created_at: new Date().toISOString(),
-    interests: [],
-    skills: [],
-    top_careers: [],
-    career_fits: [],
-    roadmap: null,
-    skill_gap_analysis: null,
-    ...entry,
-  };
-  const idx = history.assessments.findIndex((item) => item.session_id === nextEntry.session_id);
-  if (idx >= 0) {
-    history.assessments[idx] = { ...history.assessments[idx], ...nextEntry };
-  } else {
-    history.assessments.unshift(nextEntry);
-  }
-  writeLocalHistory(history);
-}
-
-function updateLocalAssessmentSession(sessionId, updater) {
-  if (!sessionId) return;
-  const history = readLocalHistory();
-  const idx = history.assessments.findIndex((item) => item.session_id === sessionId);
-  if (idx < 0) return;
-  history.assessments[idx] = updater(history.assessments[idx]);
-  writeLocalHistory(history);
-}
-
-function updateLocalProgress(sessionId, progressData) {
-  if (!sessionId) return;
-  const history = readLocalHistory();
-  const progressItem = {
+function saveDemoRoadmapHistory() {
+  const sessionId = localStorage.getItem("career-counselor-session-id") || demoCareerOutput.session_id;
+  localStorage.setItem("career-counselor-session-id", sessionId);
+  upsertLocalAssessment({
     session_id: sessionId,
-    ...progressData,
-  };
-  const idx = history.progress.findIndex(
-    (item) => item.session_id === sessionId && item.step_id === progressItem.step_id,
-  );
-  if (idx >= 0) {
-    history.progress[idx] = { ...history.progress[idx], ...progressItem };
-  } else {
-    history.progress.push(progressItem);
-  }
-  writeLocalHistory(history);
+    name: careerDummyData.name,
+    interests: careerDummyData.interests,
+    skills: careerDummyData.skills,
+    education_level: careerDummyData.education_level,
+    career_goals: [careerDummyData.goals],
+    location: careerDummyData.location,
+    notes: roadmapDummyData.notes,
+    career_fits: demoCareerOutput.career_fits,
+    top_careers: demoCareerOutput.top_3_careers,
+    roadmap: demoRoadmapOutput,
+  });
 }
 
 // ---
@@ -404,39 +374,6 @@ function stopLoadingText(interval) {
 // This allows us to use await inside the function without having to define a separate async function and then call it, as await requires an async function.
 
 // --- Utility Functions ---
-
-const API_BASE_URL = "http://localhost:8001";
-
-function buildApiUrl(endpoint) {
-  return `${API_BASE_URL}/${endpoint.replace(/^\/+/, "")}`;
-}
-
-async function getEndpointData(endpoint) {
-  const res = await fetch(buildApiUrl(endpoint));
-  return await res.json();
-}
-
-const getDataFromEndpoint = async (endpoint) => {
-  const data = await getEndpointData(endpoint);
-  return data;
-};
-
-async function postEndpointData(endpoint, payload) {
-  const res = await fetch(buildApiUrl(endpoint), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || `Request failed with status ${res.status}`);
-  }
-
-  return await res.json();
-}
 
 // create new chips based on the array of options
 function loadChips(array, container) {
@@ -690,6 +627,7 @@ const roadmapErrorText = document.getElementById("roadmap-error-text");
 const roadmapRetryBtn = document.getElementById("roadmap-retry-btn");
 let latestCareerAssessment = null;
 let latestCareerSubmission = null;
+let latestRoadmapSubmission = null;
 let latestSkillGapAnalysis = null;
 let latestRoadmapSteps = [];
 let latestRoadmapCareer = null;
@@ -712,23 +650,41 @@ async function fetchAndShowProgress() {
   try {
     const res = await fetch(`http://localhost:8001/api/tasks/${currentSessionId}`);
     const data = await res.json();
+    const roadmapSteps = Array.isArray(latestRoadmapSteps) ? latestRoadmapSteps : [];
+    const completedSteps = new Set((data.steps || []).map((step) => String(step.step_id)));
+    const normalizedSteps = roadmapSteps.length
+      ? roadmapSteps.map((step, index) => {
+          const stepId = String(step.step_id || step.order || index + 1);
+          return {
+            step_id: stepId,
+            step_title: step.title || `Step ${index + 1}`,
+            completed: completedSteps.has(stepId),
+          };
+        })
+      : (data.steps || []).map((step) => ({
+          step_id: String(step.step_id),
+          step_title: step.step_title || `Step ${step.step_id}`,
+          completed: true,
+        }));
+    const completedCount = normalizedSteps.filter((step) => step.completed).length;
+    const totalSteps = normalizedSteps.length || data.total_steps || 0;
+    const percentage = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
 
     if (progressPanel) progressPanel.classList.remove("hidden");
     if (progressStats) {
-      const pct = data.completion_percentage || 0;
-      progressStats.textContent = `${data.completed_count}/${data.total_steps} completed (${Math.round(pct)}%)`;
+      progressStats.textContent = `${completedCount}/${totalSteps} completed (${percentage}%)`;
     }
     if (progressStepList) {
       progressStepList.innerHTML = "";
-      if (data.steps && data.steps.length > 0) {
-        data.steps.forEach(step => {
+      if (normalizedSteps.length > 0) {
+        normalizedSteps.forEach(step => {
           const li = document.createElement("li");
-          li.className = "progress-step-item completed";
-          li.innerHTML = `<span class="step-title">${step.step_title || "Step " + step.step_id}</span>`;
+          li.className = `progress-step-item ${step.completed ? "completed" : "pending"}`;
+          li.innerHTML = `<span class="step-title">${step.step_title}</span><span class="step-state">${step.completed ? "Done" : "Pending"}</span>`;
           progressStepList.appendChild(li);
         });
       } else {
-        progressStepList.innerHTML = "<li class='progress-step-item'>No completed steps yet.</li>";
+        progressStepList.innerHTML = "<li class='progress-step-item'>No roadmap saved yet.</li>";
       }
     }
   } catch (err) {
@@ -821,39 +777,53 @@ demoCareerOutput.career_fits = demoCareerOutput.top_3_careers;
 
 const demoRoadmapOutput = {
   career_name: "Backend Developer",
-  total_duration: "8 months",
+  total_duration: "1 year",
   current_level: "intermediate",
   skill_gap_summary: "You have strong Python and API basics. Missing skills: Docker (DevOps), advanced PostgreSQL optimization, and CI/CD pipeline configuration. These are critical for senior backend roles and deployment readiness.",
   what_to_do_right_now: [
-    { title: "Complete FastAPI Tutorial", duration: "1 week", description: "Build a REST API with authentication and database integration." },
-    { title: "Learn Docker Basics", duration: "2 weeks", description: "Containerize your FastAPI app - this is the #1 missing skill for your career goals." }
+    { title: "Complete FastAPI Tutorial", duration: "2 weeks", description: "Build a REST API with authentication and database integration." },
+    { title: "Learn Docker Basics", duration: "3 weeks", description: "Containerize your FastAPI app - this is the #1 missing skill for your career goals." }
   ],
   steps: [
-    { step_id: 1, title: "Deepen Language Fundamentals", duration: "4 weeks", description: "Master core Python concepts, data structures, error handling, and OOP principles.", resources: ["https://docs.python.org/3/tutorial/", "https://realpython.com/"], targets_missing_skill: false },
-    { step_id: 2, title: "Learn API Development", duration: "6 weeks", description: "Build REST APIs using FastAPI/Flask. Understand authentication, validation, and best practices.", resources: ["https://fastapi.tiangolo.com/", "https://www.restapitutorial.com/"], targets_missing_skill: false },
-    { step_id: 3, title: "Database Mastery", duration: "4 weeks", description: "Learn PostgreSQL, ORM concepts, migrations, and database design patterns.", resources: ["https://www.postgresql.org/docs/", "https://www.sqlite.org/index.html"], targets_missing_skill: false },
-    { step_id: 4, title: "Docker & Containerization", duration: "3 weeks", description: "Learn Docker concepts, build images, push to registry. This fills a critical skill gap.", resources: ["Docker: https://docker.com/", "Docker Hub: https://hub.docker.com/"], targets_missing_skill: true },
-    { step_id: 5, title: "CI/CD Pipelines", duration: "3 weeks", description: "Automate testing and deployment using GitHub Actions or similar tools.", resources: ["GitHub Actions: https://github.com/features/actions", "CI/CD best practices: https://martinfowler.com/articles/continuousIntegration.html"], targets_missing_skill: true },
-    { step_id: 6, title: "Build Portfolio Projects", duration: "6 weeks", description: "Create 2-3 full projects with Docker + CI/CD: e-commerce API, task manager, or blog backend.", resources: ["Project Ideas: https://github.com/florinpop17/app-ideas"], targets_missing_skill: false }
+    { step_id: 1, title: "Python and SQL Refresh", duration: "3 weeks", description: "Review core Python concepts, data structures, and practical SQL for backend work.", resources: ["https://docs.python.org/3/tutorial/", "https://www.postgresql.org/docs/"], targets_missing_skill: false },
+    { step_id: 2, title: "FastAPI and REST Basics", duration: "4 weeks", description: "Build REST APIs using FastAPI, validation, routing, and clean request/response handling.", resources: ["https://fastapi.tiangolo.com/", "https://www.restapitutorial.com/"], targets_missing_skill: false },
+    { step_id: 3, title: "Database Design", duration: "4 weeks", description: "Learn PostgreSQL schema design, ORM usage, migrations, and query optimization.", resources: ["https://www.postgresql.org/docs/", "https://www.sqlite.org/index.html"], targets_missing_skill: false },
+    { step_id: 4, title: "Docker and Deployment", duration: "3 weeks", description: "Containerize the app, understand images, and deploy a small backend project.", resources: ["https://docs.docker.com/", "https://hub.docker.com/"], targets_missing_skill: true },
+    { step_id: 5, title: "CI/CD Pipelines", duration: "3 weeks", description: "Automate testing and deployment using GitHub Actions or similar tools.", resources: ["https://github.com/features/actions", "https://martinfowler.com/articles/continuousIntegration.html"], targets_missing_skill: true },
+    { step_id: 6, title: "Portfolio Project Build", duration: "5 weeks", description: "Create one strong backend project and one small API project to show practical delivery.", resources: ["https://github.com/florinpop17/app-ideas"], targets_missing_skill: false }
   ]
 };
 
 function updateRoadmapPhaseState(phase) {
   const checkboxes = Array.from(phase.querySelectorAll(".roadmap-task-checkbox"));
   const allChecked = checkboxes.length > 0 && checkboxes.every((checkbox) => checkbox.checked);
+  const statusChip = phase.querySelector(".roadmap-status-chip");
+  const defaultStatus = phase.dataset.defaultStatus || "planned";
 
   phase.classList.toggle("complete", allChecked);
 
   if (allChecked) {
     phase.classList.remove("current");
-  } else if (phase.dataset.defaultStatus === "current") {
+  } else if (defaultStatus === "current") {
     phase.classList.add("current");
+  } else {
+    phase.classList.remove("current");
   }
 
   checkboxes.forEach((checkbox) => {
     const label = checkbox.closest(".roadmap-task-label");
     if (label) label.classList.toggle("is-checked", checkbox.checked);
   });
+
+  if (statusChip) {
+    if (allChecked) {
+      statusChip.textContent = "Done";
+    } else if (defaultStatus === "current") {
+      statusChip.textContent = "In progress";
+    } else {
+      statusChip.textContent = "Upcoming";
+    }
+  }
 }
 
 function setupRoadmapTaskInteractions() {
@@ -944,27 +914,21 @@ function createChipList(items = []) {
   list.className = "chips-list";
   items.forEach((item) => {
     const chip = document.createElement("li");
-    chip.className = "chip resource-chip";
-
     const urlMatch = item.match(/(https?:\/\/[^\s]+)/);
     if (urlMatch) {
       const link = document.createElement("a");
+      link.className = "chip";
       link.href = urlMatch[1];
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.textContent = item.replace(urlMatch[1], "").trim() || urlMatch[1];
       chip.appendChild(link);
     } else {
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "resource-found-checkbox";
-      checkbox.title = "Mark as found";
-
-      const label = document.createElement("span");
-      label.textContent = item;
-
-      chip.appendChild(checkbox);
-      chip.appendChild(label);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chip";
+      button.textContent = item;
+      chip.appendChild(button);
     }
     list.appendChild(chip);
   });
@@ -1013,7 +977,7 @@ function renderSkillGapModal(payload) {
 }
 
 function renderCareerRecommendations(payload) {
-  const topCareers = payload.top_3_careers || payload.career_fits || [];
+  const topCareers = payload.career_fits || payload.top_3_careers || [];
   latestCareerAssessment = payload;
 
   if (careerOutput) {
@@ -1153,9 +1117,8 @@ function buildImmediateStepCard(step, index) {
 function buildRoadmapPhase(step, index) {
   const article = document.createElement("article");
   article.className = "roadmap-phase";
+  article.dataset.defaultStatus = index === 0 ? "current" : "planned";
   if (index === 0) {
-    article.classList.add("complete");
-  } else if (index === 1) {
     article.classList.add("current");
   }
 
@@ -1176,8 +1139,8 @@ function buildRoadmapPhase(step, index) {
   chips.className = "roadmap-phase-chips";
 
   const statusChip = document.createElement("span");
-  statusChip.className = "chip job-type";
-  statusChip.textContent = index === 0 ? "Completed" : index === 1 ? "In Progress" : "Planned";
+  statusChip.className = "chip job-type roadmap-status-chip";
+  statusChip.textContent = index === 0 ? "In progress" : "Upcoming";
 
   const durationChip = document.createElement("span");
   durationChip.className = "chip";
@@ -1273,6 +1236,8 @@ function buildRoadmapPhase(step, index) {
 
 function renderRoadmapResponse(payload) {
   latestRoadmapCareer = payload.career_name || "Unknown";
+  latestRoadmapSteps = Array.isArray(payload.steps) ? payload.steps : [];
+  const roadmapRequest = latestRoadmapSubmission || {};
   const targetRole = document.getElementById("roadmap-target-role");
   const timelineChip = document.getElementById("roadmap-timeline-chip");
   const levelChip = document.getElementById("roadmap-level-chip");
@@ -1291,7 +1256,24 @@ function renderRoadmapResponse(payload) {
   }
 
   if (targetRole) targetRole.textContent = payload.career_name || "Backend Developer";
-  if (timelineChip) timelineChip.textContent = payload.total_duration || "12 months";
+  if (timelineChip) {
+    const selectedTimeline = roadmapRequest.timeline
+      ? formatTitle(roadmapRequest.timeline)
+      : "No timeline selected";
+    const weeklyHours = roadmapRequest.timeline
+      ? {
+          "3months": 20,
+          "6months": 12,
+          "1year": 8,
+          "2years": 5,
+          "5years": 3,
+        }[roadmapRequest.timeline] || 10
+      : null;
+    const durationText = payload.total_duration || "Roadmap duration not returned";
+    timelineChip.textContent = weeklyHours
+      ? `${selectedTimeline} · ${weeklyHours} hrs/week · ${durationText}`
+      : `${selectedTimeline} · ${durationText}`;
+  }
   if (levelChip) {
     levelChip.textContent = `Current: ${formatTitle(payload.current_level || "beginner")}`;
   }
@@ -1490,6 +1472,7 @@ roadmapForm.addEventListener("submit", async (e) => {
   hideInlineError(roadmapError);
 
   const roadmapData = buildRoadmapFormData(roadmapForm);
+  latestRoadmapSubmission = roadmapData;
   const sessionId = localStorage.getItem("career-counselor-session-id") || null;
   const timelineHoursMap = {
     "3months": 20,
@@ -1569,7 +1552,7 @@ if (careerDemoBtn) {
     setChipSelections(careerForm.querySelector("#industries-chips"), careerDummyData.industries, careerDummyData.custom_industry);
     latestCareerSubmission = buildCareerFormData(careerForm);
     currentSessionId = demoCareerOutput.session_id;
-    localStorage.setItem("career-counselor-session-id", currentSessionId);
+    saveDemoCareerHistory();
     if (careerOutput) {
       renderCareerRecommendations(demoCareerOutput);
     }
@@ -1585,6 +1568,8 @@ if (roadmapDemoBtn) {
     roadmapForm.querySelector("#timeline").value = roadmapDummyData.timeline;
     roadmapForm.querySelector("#current_status").value = roadmapDummyData.current_status;
     roadmapForm.querySelector("#notes").value = roadmapDummyData.notes;
+    latestRoadmapSubmission = buildRoadmapFormData(roadmapForm);
+    saveDemoRoadmapHistory();
     if (roadmapOutput) roadmapOutput.classList.remove("hidden");
     renderRoadmapResponse(demoRoadmapOutput);
     document.getElementById("roadmap").scrollIntoView({ behavior: "smooth" });

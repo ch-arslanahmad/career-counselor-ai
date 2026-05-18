@@ -49,81 +49,90 @@ def update_task(payload: TaskUpdateRequest, db=Depends(get_optional_db)):
             "note": "Database not available, progress not persisted",
         }
 
-    from models import TaskProgress, UserProgress
+    try:
+        from models import TaskProgress, UserProgress
 
-    # Save to session-based table
-    existing = (
-        db.query(TaskProgress)
-        .filter(
-            TaskProgress.session_id == payload.session_id,
-            TaskProgress.step_id == payload.step_id,
-        )
-        .first()
-    )
-
-    if payload.mark_complete:
-        if existing is None:
-            progress = TaskProgress(
-                session_id=payload.session_id,
-                step_id=payload.step_id,
-                step_title=payload.step_title,
-                completed_at=datetime.utcnow(),
-            )
-            db.add(progress)
-        else:
-            existing.completed_at = datetime.utcnow()
-            existing.step_title = payload.step_title
-    else:
-        if existing is not None:
-            db.delete(existing)
-
-    # Save to user progress table if user_id provided
-    if payload.user_id:
-        user_existing = (
-            db.query(UserProgress)
+        # Save to session-based table
+        existing = (
+            db.query(TaskProgress)
             .filter(
-                UserProgress.user_id == payload.user_id,
-                UserProgress.career_topic == payload.career_topic,
-                UserProgress.step_id == payload.step_id,
+                TaskProgress.session_id == payload.session_id,
+                TaskProgress.step_id == payload.step_id,
             )
             .first()
         )
 
         if payload.mark_complete:
-            if user_existing is None:
-                user_progress = UserProgress(
-                    user_id=payload.user_id,
+            if existing is None:
+                progress = TaskProgress(
                     session_id=payload.session_id,
-                    career_topic=payload.career_topic,
                     step_id=payload.step_id,
                     step_title=payload.step_title,
-                    completed=True,
                     completed_at=datetime.utcnow(),
                 )
-                db.add(user_progress)
+                db.add(progress)
             else:
-                user_existing.completed = True
-                user_existing.completed_at = datetime.utcnow()
-                user_existing.step_title = payload.step_title
+                existing.completed_at = datetime.utcnow()
+                existing.step_title = payload.step_title
         else:
-            if user_existing:
-                user_existing.completed = False
-                user_existing.completed_at = None
+            if existing is not None:
+                db.delete(existing)
 
-    db.commit()
+        # Save to user progress table if user_id provided
+        if payload.user_id:
+            user_existing = (
+                db.query(UserProgress)
+                .filter(
+                    UserProgress.user_id == payload.user_id,
+                    UserProgress.career_topic == payload.career_topic,
+                    UserProgress.step_id == payload.step_id,
+                )
+                .first()
+            )
 
-    total = db.query(TaskProgress).filter(TaskProgress.session_id == payload.session_id).count()
-    completed_count = db.query(TaskProgress).filter(
-        TaskProgress.session_id == payload.session_id,
-        TaskProgress.completed_at.isnot(None)
-    ).count()
-    progress_percentage = (completed_count / total * 100) if total > 0 else 0.0
+            if payload.mark_complete:
+                if user_existing is None:
+                    user_progress = UserProgress(
+                        user_id=payload.user_id,
+                        session_id=payload.session_id,
+                        career_topic=payload.career_topic,
+                        step_id=payload.step_id,
+                        step_title=payload.step_title,
+                        completed=True,
+                        completed_at=datetime.utcnow(),
+                    )
+                    db.add(user_progress)
+                else:
+                    user_existing.completed = True
+                    user_existing.completed_at = datetime.utcnow()
+                    user_existing.step_title = payload.step_title
+            else:
+                if user_existing:
+                    user_existing.completed = False
+                    user_existing.completed_at = None
 
-    return {
-        "step_id": payload.step_id,
-        "completed": payload.mark_complete,
-        "progress_percentage": progress_percentage,
-    }
+        db.commit()
+
+        total = db.query(TaskProgress).filter(TaskProgress.session_id == payload.session_id).count()
+        completed_count = db.query(TaskProgress).filter(
+            TaskProgress.session_id == payload.session_id,
+            TaskProgress.completed_at.isnot(None),
+        ).count()
+        progress_percentage = (completed_count / total * 100) if total > 0 else 0.0
+
+        return {
+            "step_id": payload.step_id,
+            "completed": payload.mark_complete,
+            "progress_percentage": progress_percentage,
+        }
+    except Exception as exc:
+        db.rollback()
+        return {
+            "step_id": payload.step_id,
+            "completed": payload.mark_complete,
+            "progress_percentage": 0.0,
+            "note": f"Database write failed, progress kept locally only: {exc}",
+        }
 
 
 @router.get("/api/tasks/{session_id}")

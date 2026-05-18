@@ -40,19 +40,10 @@ This project follows the iterative scrum framework in sprints.
 - Database: MySQL
 - AI: LLM API (OpenAI/Anthropic compatible)
 
-## O*NET Web Services
+## Data Model
 
-This project uses O*NET data for career information.
-
-- O*NET Web Services access is free, but registration is required.
-- The API uses `X-API-Key` authentication after your organization and project are approved.
-- All applications using O*NET data must credit and link to O*NET Web Services and follow the O*NET terms of service and data license.
-- The service is best-effort and rate-limited, so caching or a local database copy is recommended for repeated queries.
-- If your account is still under review, the live API is not available yet.
-
-Project note:
-- The seed pipeline is O*NET-only now.
-- Local fallback seed data was removed from the DB flow.
+Career, skill, roadmap, assessment, and progress data are stored in the database and surfaced through the backend APIs.
+The seed flow uses local project data, not an external occupational API.
 
 ## License
 

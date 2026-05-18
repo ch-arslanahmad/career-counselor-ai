@@ -101,24 +101,13 @@ def _store_assessment_history(
 
 
 _ASSESS_SYSTEM_PROMPT = (
-    "You are a career counselor AI. Analyze the student's profile and return JSON with:\n\n"
-    "career_fits: array of careers, each MUST include:\n"
-    "  - career_name: string (e.g., Software Engineer, Data Scientist)\n"
-    "  - fit_score: integer 0-99 (realistic, not inflated)\n"
-    "  - matched_skills: array of strings - skills from student's input that match this career\n"
-    "  - missing_skills: array of strings - skills this career needs that student doesn't have\n"
-    "  - reasoning: string explaining why this career matches\n"
-    "  - growth_outlook: string (e.g., Very High, High, Moderate)\n"
-    "  - type: string (open, regulated, or degree_required)\n"
-    "  - category: string (Technology, Design, Healthcare, Business, etc.)\n"
-    "  - education_requirement: string\n\n"
-    "IMPORTANT: Always include matched_skills and missing_skills arrays for each career. "
-    "If student has no matching skills, matched_skills = []. "
-    "If no obvious missing skills, missing_skills = [].\n\n"
-    "Also return:\n"
-    "  - top_3_careers: array of the 3 highest-scoring careers\n"
-    "  - immediate_next_steps: array of 3 string action items\n\n"
-    "Score: base=15 + (skill_match * 70) + education_bonus(8). Generate 8-12 careers."
+    "You are a career counselor AI. Return JSON:\n"
+    "career_fits: array, each { career_name, fit_score 0-99, matched_skills [], missing_skills [], "
+    "reasoning, growth_outlook, type (open/regulated/degree_required), category, education_requirement }\n"
+    "top_3_careers: array of 3 highest-scoring careers\n"
+    "immediate_next_steps: array of 3 action items\n"
+    "Generate 8-12 careers. Score formula: base=15 + (skill_match*70) + education_bonus(8). "
+    "Use empty arrays if no matches or missing skills."
 )
 
 
@@ -169,7 +158,7 @@ def assess_careers(payload: CareerAssessRequest):
         "session_id": session_id,
         "assessment_id": 1,
         "career_fits": career_fits,
-        "top_3_careers": top_3[:3],
+        "top_3_careers": top_3,
         "immediate_next_steps": next_steps[:3],
         "ai_used": True,
         "ai_provider": ai_payload.get("ai_provider", "unknown"),
@@ -190,25 +179,13 @@ def build_roadmap(payload: RoadmapRequest):
     }
 
     system_prompt = (
-        "You are a career roadmap generator. Create a learning path for the given career. "
-        "IMPORTANT: Prioritize learning the missing skills first, then deepen knowledge in current skills.\n"
-        "Return JSON with:\n"
-        "  - career_name: the career role\n"
-        "  - total_duration: string (e.g., '6 months', '1 year')\n"
-        "  - skill_gap_summary: string explaining which skills are missing and why they matter\n"
-        "  - what_to_do_right_now: array of 3 objects with {title, description} — prioritize missing skills\n"
-        "  - steps: array of learning phases, each with:\n"
-        "      - step_id: integer\n"
-        "      - order: integer (1,2,3...)\n"
-        "      - title: string (e.g., 'Learn Python Basics')\n"
-        "      - description: string (what to learn)\n"
-        "      - duration: string (e.g., '2 weeks', '1 month')\n"
-        "      - resources: array of strings (free online resources, courses, etc.)\n"
-        "      - prerequisites: array of step numbers\n"
-        "      - targets_missing_skill: boolean — true if this step teaches a missing skill\n\n"
-        "Context: Student has these skills: {current_skills}. Missing skills for {career_name}: {missing_skills}.\n"
-        "Adjust depth based on student's current_level (beginner/some_knowledge/intermediate/advanced) "
-        "and weekly hours available. Make it practical and resource-rich."
+        "You are a career roadmap generator. Return JSON:\n"
+        "career_name, total_duration, skill_gap_summary\n"
+        "what_to_do_right_now: array of 3 {title, description}\n"
+        "steps: array of { step_id, order, title, description, duration, resources [], prerequisites [] }\n"
+        "Prioritize missing skills first: {current_skills}. Missing: {missing_skills}.\n"
+        "Adjust depth for current_level ({current_level}) and {timeline_hours_per_week}h/week. "
+        "Use real free resources (courses, docs, tutorials). Generate 4-8 steps."
     )
     ai_payload = generate_json(
         system_prompt,
@@ -303,14 +280,10 @@ def analyze_skill_gap(payload: SkillGapAnalysisRequest):
         return result
 
     system_prompt = (
-        "You are a skill-gap analysis AI. Given a student's skills and a target role, "
-        "return JSON with:\n"
-        "- career_name: the target role name\n"
-        "- gap_analysis: { matched_skills: [str], missing_skills: [str], summary: str }\n"
-        "- recommendations: [str] — 3 actionable next steps\n"
-        "- internship_readiness: float 0.0-1.0\n"
-        "- target_roles: [str]\n\n"
-        "Be realistic and specific. List real skills required for the role."
+        "You are a skill-gap analyst. Return JSON:\n"
+        "career_name, gap_analysis: { matched_skills [], missing_skills [], summary }, "
+        "recommendations [3 strings], internship_readiness 0.0-1.0, target_roles []\n"
+        "Be specific. Use real job requirements for the target role."
     )
     ai_payload = generate_json(
         system_prompt,

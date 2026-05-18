@@ -518,6 +518,21 @@ li {
   color: var(--color-text);
 }
 
+.chips-list .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chips-list .chip a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.chips-list .chip a:hover {
+  text-decoration: underline;
+}
+
 .chip.job-type {
   padding: 3px 10px;
 }
@@ -563,35 +578,6 @@ li {
 .required-skills .chips-list .chip {
   font-size: 11px;
   padding: 3px 8px;
-}
-
-
-
-.resource-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.resource-chip a {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--color-primary);
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.resource-chip a:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
 .resource-found-checkbox {
@@ -865,7 +851,8 @@ li {
 
 .roadmap-task-label.is-checked .roadmap-task-text {
   text-decoration: line-through;
-  opacity: 0.75;
+  color: var(--color-primary);
+  opacity: 1;
 }
 
 .roadmap-phase.complete .roadmap-phase-marker {
@@ -1197,7 +1184,21 @@ body.modal-open {
 
 .progress-step-item.completed .step-title {
   text-decoration: line-through;
-  color: var(--color-success);
+  color: var(--color-primary);
+}
+
+.progress-step-item.completed .step-state {
+  color: var(--color-primary);
+}
+
+.progress-step-item.pending .step-title {
+  color: var(--color-muted);
+}
+
+.progress-step-item .step-state {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
 }
 
 .action-chip {
@@ -1412,12 +1413,12 @@ body.modal-open {
 }
 
 .tracking-enabled .roadmap-task-label.is-checked .step-number {
-  background: var(--color-success);
+  background: var(--color-primary);
 }
 
 .tracking-enabled .roadmap-task-label.is-checked {
-  background: #e8f5e9;
-  border-left-color: var(--color-success);
+  background: var(--color-primary-light);
+  border-left-color: var(--color-primary);
 }
 
 .checklist-header {
