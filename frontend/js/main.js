@@ -61,9 +61,10 @@ let isRegisterMode = false;
 const headerLoginBtn = document.getElementById("header-login-btn");
 const headerLogoutBtn = document.getElementById("header-logout-btn");
 const headerUserDisplay = document.getElementById("header-user-display");
+const historyDemoSection = document.getElementById("history-demo-section");
 
 function updateAuthUI() {
-  const user = localStorage.getItem("career-counselor-user");
+  const user = sessionStorage.getItem("career-counselor-user");
   const historyTab = document.getElementById("tab-history");
   if (user) {
     const userObj = JSON.parse(user);
@@ -79,6 +80,7 @@ function updateAuthUI() {
     if (logoutBtn) logoutBtn.classList.remove("hidden");
     if (headerLoginBtn) headerLoginBtn.classList.add("hidden");
     if (headerLogoutBtn) headerLogoutBtn.classList.remove("hidden");
+    if (historyDemoSection) historyDemoSection.classList.add("hidden");
   } else {
     if (userDisplay) userDisplay.classList.add("hidden");
     if (headerUserDisplay) headerUserDisplay.classList.add("hidden");
@@ -86,6 +88,7 @@ function updateAuthUI() {
     if (logoutBtn) logoutBtn.classList.add("hidden");
     if (headerLoginBtn) headerLoginBtn.classList.remove("hidden");
     if (headerLogoutBtn) headerLogoutBtn.classList.add("hidden");
+    if (historyDemoSection) historyDemoSection.classList.remove("hidden");
   }
   if (historyTab) historyTab.classList.remove("hidden");
 }
@@ -104,7 +107,7 @@ if (loginBtn) {
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("career-counselor-user");
+    sessionStorage.removeItem("career-counselor-user");
     updateAuthUI();
   });
 }
@@ -145,13 +148,17 @@ if (loginForm) {
         alert(data.detail || "Authentication failed");
         return;
       }
-      localStorage.setItem("career-counselor-user", JSON.stringify({
-        user_id: data.user_id,
-        username: data.username,
-      }));
+      sessionStorage.setItem(
+        "career-counselor-user",
+        JSON.stringify({
+          user_id: data.user_id,
+          username: data.username,
+        }),
+      );
       loginModal.hidden = true;
       loginForm.reset();
       updateAuthUI();
+      loadHistory();
     } catch (err) {
       alert("Connection error. Make sure backend is running.");
     }
@@ -169,14 +176,21 @@ if (demoLoginBtn) {
       });
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem("career-counselor-user", JSON.stringify({
-          user_id: data.user_id,
-          username: data.username,
-        }));
+        sessionStorage.setItem(
+          "career-counselor-user",
+          JSON.stringify({
+            user_id: data.user_id,
+            username: data.username,
+          }),
+        );
         loginModal.hidden = true;
-        updateAuthUI();
+updateAuthUI();
+loadHistory();
+        loadHistory();
       } else {
-        alert("Demo user not found. Register first or use different credentials.");
+        alert(
+          "Demo user not found. Register first or use different credentials.",
+        );
       }
     } catch (err) {
       alert("Connection error. Make sure backend is running.");
@@ -196,6 +210,7 @@ if (loginModal) {
 
 // History tab functionality
 const historyLoginBtn = document.getElementById("history-login-btn");
+const historyPersistLoginBtn = document.getElementById("history-persist-login-btn");
 const historyLoginRequired = document.getElementById("history-login-required");
 const historyAssessments = document.getElementById("history-assessments");
 const historyProgress = document.getElementById("history-progress");
@@ -209,84 +224,214 @@ if (historyLoginBtn) {
   });
 }
 
+if (historyPersistLoginBtn) {
+  historyPersistLoginBtn.addEventListener("click", () => {
+    loginModal.hidden = false;
+  });
+}
+
 async function loadHistory() {
   const userId = getCurrentUserId();
-  let data = readLocalHistory();
+  let data = { assessments: [], progress: [] };
 
-  try {
-    if (userId) {
-      const res = await fetch(`http://localhost:8001/api/history?user_id=${userId}`);
+  // Clear any stale empty-state messages
+  const historyContent = document.getElementById("history-content");
+  if (historyContent) {
+    const oldEmpty = historyContent.querySelector(".history-empty-state");
+    if (oldEmpty) oldEmpty.remove();
+  }
+
+  if (userId) {
+    // Logged in: fetch from DB
+    try {
+      const res = await fetch(
+        `http://localhost:8001/api/history?user_id=${userId}`,
+      );
       if (res.ok) {
         data = await res.json();
-        writeLocalHistory(data);
-      }
-    }
-  } catch (err) {
-    console.error("Failed to load history:", err);
-  }
-
-  const sessionId = currentSessionId || localStorage.getItem("career-counselor-session-id");
-  if (sessionId) {
-    try {
-      const progressRes = await fetch(`http://localhost:8001/api/tasks/${sessionId}`);
-      if (progressRes.ok) {
-        const progressData = await progressRes.json();
-        data.progress = progressData.steps || data.progress || [];
-        if (!userId) {
-          writeLocalHistory(data);
-        }
       }
     } catch (err) {
-      console.error("Failed to load session progress:", err);
+      console.error("Failed to load history from DB:", err);
     }
+
+    // Also fetch session task progress
+    const sessionId =
+      currentSessionId || localStorage.getItem("career-counselor-session-id");
+    if (sessionId) {
+      try {
+        const progressRes = await fetch(
+          `http://localhost:8001/api/tasks/${sessionId}`,
+        );
+        if (progressRes.ok) {
+          const progressData = await progressRes.json();
+          if (progressData.steps && progressData.steps.length > 0) {
+            data.progress = progressData.steps;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load session progress:", err);
+      }
+    }
+  } else {
+    // Not logged in: use localStorage
+    data = readLocalHistory();
   }
 
-  if (historyLoginRequired) historyLoginRequired.classList.add("hidden");
+  // Update source note
   if (historySourceNote) {
     historySourceNote.textContent = userId
       ? "Signed-in history is synced with the database."
       : "This device-only history is stored in your browser until you sign in.";
   }
 
-  if (historyAssessments) {
+  // Show/hide demo button
+  if (historyDemoSection) {
+    if (userId) {
+      historyDemoSection.classList.add("hidden");
+    } else {
+      historyDemoSection.classList.remove("hidden");
+    }
+  }
+
+  // Hide login-required prompt when loading
+  if (historyLoginRequired) historyLoginRequired.classList.add("hidden");
+
+  // Hide persist warning for logged-in users
+  const persistWarning = document.getElementById("history-persist-warning");
+  if (persistWarning) {
+    persistWarning.classList.toggle("hidden", !!userId);
+  }
+
+  // Render assessments
+  if (historyAssessments && assessmentList) {
     if (data.assessments && data.assessments.length > 0) {
       historyAssessments.classList.remove("hidden");
-      if (assessmentList) {
-        assessmentList.innerHTML = data.assessments.map(a => `
-          <div class="history-card">
-            <h4>${a.name || "Assessment"} - ${a.created_at ? new Date(a.created_at).toLocaleDateString() : ""}</h4>
-            <p>Top careers: ${(a.top_careers || []).join(", ")}</p>
-            <p class="history-skills">Skills: ${(a.skills || []).join(", ")}</p>
-            ${a.roadmap && a.roadmap.career_name ? `<p>Saved roadmap: ${a.roadmap.career_name}</p>` : ""}
-            ${a.skill_gap_analysis && a.skill_gap_analysis.career_name ? `<p>Skill gap analysis: ${a.skill_gap_analysis.career_name}</p>` : ""}
-          </div>
-        `).join("");
-      }
+      assessmentList.innerHTML = data.assessments
+        .map(
+          (a) => `
+        <div class="history-card">
+          <h4>${a.name || "Assessment"} - ${a.created_at ? new Date(a.created_at).toLocaleDateString() : ""}</h4>
+          <p>Top careers: ${(a.top_careers || []).map(c => typeof c === 'string' ? c : (c.career_name || c.title || 'Unknown')).join(", ")}</p>
+          <p class="history-skills">Skills: ${(a.skills || []).join(", ")}</p>
+          ${a.roadmap && a.roadmap.career_name ? `<p>Saved roadmap: ${a.roadmap.career_name}</p>` : ""}
+          ${a.skill_gap_analysis && a.skill_gap_analysis.career_name ? `<p>Skill gap analysis: ${a.skill_gap_analysis.career_name}</p>` : ""}
+        </div>`,
+        )
+        .join("");
     } else {
       historyAssessments.classList.add("hidden");
     }
   }
 
-  if (historyProgress) {
+  // Render progress
+  if (historyProgress && progressList) {
     if (data.progress && data.progress.length > 0) {
       historyProgress.classList.remove("hidden");
-      if (progressList) {
-        progressList.innerHTML = data.progress.map(p => `
-          <div class="history-card">
-            <h4>${p.career_topic || "Learning Progress"}</h4>
-            <p>Completed step: ${p.step_title || "Step"}</p>
-            <p class="history-date">${p.completed_at ? new Date(p.completed_at).toLocaleDateString() : ""}</p>
-          </div>
-        `).join("");
-      }
+      progressList.innerHTML = data.progress
+        .map(
+          (p) => `
+        <div class="history-card">
+          <h4>${p.career_topic || "Learning Progress"}</h4>
+          <p>Completed step: ${p.step_title || "Step"}</p>
+          <p class="history-date">${p.completed_at ? new Date(p.completed_at).toLocaleDateString() : ""}</p>
+        </div>`,
+        )
+        .join("");
     } else {
       historyProgress.classList.add("hidden");
     }
   }
+
+  // Show empty state if no data
+  const hasAnyData = (data.assessments && data.assessments.length > 0) || (data.progress && data.progress.length > 0);
+  if (!hasAnyData && historyContent && !historyContent.querySelector(".history-empty-state")) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "history-empty-state";
+    emptyState.style.cssText = "text-align: center; padding: 2rem; color: var(--color-muted);";
+    emptyState.innerHTML = userId
+      ? "<p>No history yet. Submit a career assessment to start building your history.</p>"
+      : "<p>No history yet. Submit a career assessment or click 'Load Demo History' to see sample data.</p>";
+    historyContent.appendChild(emptyState);
+  }
+}
+
+function loadDemoHistory() {
+  const demoAssessments = [
+    {
+      name: "Arslan Ahmad",
+      created_at: "2026-05-19T10:30:00Z",
+      top_careers: ["Backend Developer", "Full Stack Developer", "DevOps Engineer"],
+      skills: ["JavaScript", "Python", "SQL"],
+      roadmap: { career_name: "Backend Developer" },
+      skill_gap_analysis: { career_name: "Backend Developer" },
+    },
+    {
+      name: "Arslan Ahmad",
+      created_at: "2026-05-15T08:00:00Z",
+      top_careers: ["Data Engineer", "AI/ML Engineer"],
+      skills: ["Python", "SQL", "Statistics"],
+    },
+  ];
+
+  const demoProgress = [
+    { career_topic: "Backend Developer", step_title: "Python and SQL Refresh", completed_at: "2026-05-19T12:00:00Z" },
+    { career_topic: "Backend Developer", step_title: "FastAPI and REST Basics", completed_at: "2026-05-18T14:30:00Z" },
+  ];
+
+  localStorage.setItem(
+    "career-counselor-local-history",
+    JSON.stringify({ assessments: demoAssessments, progress: demoProgress }),
+  );
+
+  if (historyAssessments) {
+    historyAssessments.classList.remove("hidden");
+    if (assessmentList) {
+      assessmentList.innerHTML = demoAssessments
+        .map(
+          (a) => `
+        <div class="history-card">
+          <h4>${a.name} - ${new Date(a.created_at).toLocaleDateString()}</h4>
+          <p>Top careers: ${(a.top_careers || []).join(", ")}</p>
+          <p class="history-skills">Skills: ${(a.skills || []).join(", ")}</p>
+          ${a.roadmap ? `<p>Saved roadmap: ${a.roadmap.career_name}</p>` : ""}
+          ${a.skill_gap_analysis ? `<p>Skill gap analysis: ${a.skill_gap_analysis.career_name}</p>` : ""}
+        </div>
+      `,
+        )
+        .join("");
+    }
+  }
+
+  if (historyProgress) {
+    historyProgress.classList.remove("hidden");
+    if (progressList) {
+      progressList.innerHTML = demoProgress
+        .map(
+          (p) => `
+        <div class="history-card">
+          <h4>${p.career_topic}</h4>
+          <p>Completed step: ${p.step_title}</p>
+          <p class="history-date">${new Date(p.completed_at).toLocaleDateString()}</p>
+        </div>
+      `,
+        )
+        .join("");
+    }
+  }
+
+  const persistWarning = document.getElementById("history-persist-warning");
+  if (persistWarning) persistWarning.classList.remove("hidden");
+
+  if (historySourceNote) {
+    historySourceNote.textContent = "Demo history loaded from sample data.";
+  }
+
+  const demoBtn = document.getElementById("history-demo-btn");
+  if (demoBtn) demoBtn.textContent = "Demo History Loaded";
 }
 
 // Listen for tab changes to load history
-document.querySelectorAll(".tab").forEach(tab => {
+document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", (e) => {
     if (tab.getAttribute("href") === "#history") {
       loadHistory();
@@ -294,10 +439,26 @@ document.querySelectorAll(".tab").forEach(tab => {
   });
 });
 
+// History demo button
+const historyDemoBtn = document.getElementById("history-demo-btn");
+if (historyDemoBtn) {
+  historyDemoBtn.addEventListener("click", () => {
+    const user = sessionStorage.getItem("career-counselor-user");
+    if (user) {
+      loadHistory();
+    } else {
+      loadDemoHistory();
+    }
+  });
+}
+
 updateAuthUI();
 
 function saveDemoCareerHistory() {
-  localStorage.setItem("career-counselor-session-id", demoCareerOutput.session_id);
+  localStorage.setItem(
+    "career-counselor-session-id",
+    demoCareerOutput.session_id,
+  );
   upsertLocalAssessment({
     session_id: demoCareerOutput.session_id,
     name: careerDummyData.name,
@@ -313,7 +474,9 @@ function saveDemoCareerHistory() {
 }
 
 function saveDemoRoadmapHistory() {
-  const sessionId = localStorage.getItem("career-counselor-session-id") || demoCareerOutput.session_id;
+  const sessionId =
+    localStorage.getItem("career-counselor-session-id") ||
+    demoCareerOutput.session_id;
   localStorage.setItem("career-counselor-session-id", sessionId);
   upsertLocalAssessment({
     session_id: sessionId,
@@ -401,34 +564,34 @@ function loadOptions(items, select) {
 
 // this is used only for the main form, where fields are to be populated
 async function populateForm() {
-  // creating a new CareerFormOptions object with data from the endpoints
-  const [interestsData, skillsData, industriesData, locationsData] =
-    await Promise.all([
-      getDataFromEndpoint("options/interests"),
-      getDataFromEndpoint("options/skills"),
-      getDataFromEndpoint("options/industries"),
-      getDataFromEndpoint("options/locations"),
-    ]);
+  try {
+    const [interestsData, skillsData, industriesData, locationsData] =
+      await Promise.all([
+        getDataFromEndpoint("options/interests"),
+        getDataFromEndpoint("options/skills"),
+        getDataFromEndpoint("options/industries"),
+        getDataFromEndpoint("options/locations"),
+      ]);
 
-  const formData = new CareerFormOptions({
-    interests: interestsData.interests,
-    skills: skillsData.skills,
-    industries: industriesData.industries,
-    locations: locationsData.locations,
-  });
+    const formData = new CareerFormOptions({
+      interests: interestsData.interests,
+      skills: skillsData.skills,
+      industries: industriesData.industries,
+      locations: locationsData.locations,
+    });
 
-  // -- FETCH main form chips containers
-  const interestsContainer = document.querySelector("#interests-chips");
-  const skillsContainer = document.querySelector("#skills-chips");
-  const industriesContainer = document.querySelector("#industries-chips");
+    const interestsContainer = document.querySelector("#interests-chips");
+    const skillsContainer = document.querySelector("#skills-chips");
+    const industriesContainer = document.querySelector("#industries-chips");
+    const locationsContainer = document.querySelector("#location");
 
-  // a dropdown container for locatiosn
-  const locationsContainer = document.querySelector("#location");
-
-  loadChips(formData.interests, interestsContainer);
-  loadChips(formData.skills, skillsContainer);
-  loadChips(formData.industries, industriesContainer);
-  loadOptions(formData.locations, locationsContainer);
+    loadChips(formData.interests, interestsContainer);
+    loadChips(formData.skills, skillsContainer);
+    loadChips(formData.industries, industriesContainer);
+    loadOptions(formData.locations, locationsContainer);
+  } catch (err) {
+    console.error("Failed to load form options:", err);
+  }
 }
 
 populateForm(); // call the function to populate the form on page load
@@ -650,13 +813,19 @@ function buildRoadmapFormData(form) {
 
 const careerForm = document.getElementById("career-form");
 const roadmapForm = document.getElementById("roadmap-form");
-const roadmapCustomTaskInput = document.getElementById("roadmap-custom-task-input");
+const roadmapCustomTaskInput = document.getElementById(
+  "roadmap-custom-task-input",
+);
 const roadmapAddTaskBtn = document.getElementById("roadmap-add-task-btn");
-const roadmapCustomTaskList = document.getElementById("roadmap-custom-task-list");
+const roadmapCustomTaskList = document.getElementById(
+  "roadmap-custom-task-list",
+);
 const careerOutput = document.getElementById("career-output");
 const roadmapOutput = document.getElementById("roadmap-output");
 const enableTrackingCheckbox = document.getElementById("enable-tracking");
-const careerRecommendationPanel = document.getElementById("career-recommendation-panel");
+const careerRecommendationPanel = document.getElementById(
+  "career-recommendation-panel",
+);
 const skillGapsCard = document.getElementById("skill-gaps");
 const skillGapsContent = document.getElementById("skill-gaps-content");
 const hideRecommendationBtn = document.getElementById("hide-recommendation");
@@ -684,7 +853,8 @@ let latestRoadmapSubmission = null;
 let latestSkillGapAnalysis = null;
 let latestRoadmapSteps = [];
 let latestRoadmapCareer = null;
-let currentSessionId = localStorage.getItem("career-counselor-session-id") || null;
+let currentSessionId =
+  localStorage.getItem("career-counselor-session-id") || null;
 
 const viewProgressBtn = document.getElementById("view-progress-btn");
 const progressPanel = document.getElementById("progress-panel");
@@ -700,48 +870,163 @@ async function fetchAndShowProgress() {
     return;
   }
 
-  try {
-    const res = await fetch(`http://localhost:8001/api/tasks/${currentSessionId}`);
-    const data = await res.json();
-    const roadmapSteps = Array.isArray(latestRoadmapSteps) ? latestRoadmapSteps : [];
-    const completedSteps = new Set((data.steps || []).map((step) => String(step.step_id)));
-    const normalizedSteps = roadmapSteps.length
-      ? roadmapSteps.map((step, index) => {
-          const stepId = String(step.step_id || step.order || index + 1);
-          return {
-            step_id: stepId,
-            step_title: step.title || `Step ${index + 1}`,
-            completed: completedSteps.has(stepId),
-          };
-        })
-      : (data.steps || []).map((step) => ({
-          step_id: String(step.step_id),
-          step_title: step.step_title || `Step ${step.step_id}`,
-          completed: true,
-        }));
-    const completedCount = normalizedSteps.filter((step) => step.completed).length;
-    const totalSteps = normalizedSteps.length || data.total_steps || 0;
-    const percentage = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+  // Re-fetch latest roadmap steps if not in memory
+  if (!latestRoadmapSteps || latestRoadmapSteps.length === 0) {
+    const userId = getCurrentUserId();
 
-    if (progressPanel) progressPanel.classList.remove("hidden");
-    if (progressStats) {
-      progressStats.textContent = `${completedCount}/${totalSteps} completed (${percentage}%)`;
-    }
-    if (progressStepList) {
-      progressStepList.innerHTML = "";
-      if (normalizedSteps.length > 0) {
-        normalizedSteps.forEach(step => {
-          const li = document.createElement("li");
-          li.className = `progress-step-item ${step.completed ? "completed" : "pending"}`;
-          li.innerHTML = `<span class="step-title">${step.step_title}</span><span class="step-state">${step.completed ? "Done" : "Pending"}</span>`;
-          progressStepList.appendChild(li);
-        });
-      } else {
-        progressStepList.innerHTML = "<li class='progress-step-item'>No roadmap saved yet.</li>";
+    // Try backend history first (logged-in users)
+    if (userId) {
+      try {
+        const res = await fetch(`http://localhost:8001/api/history?user_id=${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Find the assessment matching current session_id
+          const match = (data.assessments || []).find(a => a.session_id === currentSessionId);
+          if (match && match.roadmap && Array.isArray(match.roadmap.steps)) {
+            latestRoadmapSteps = match.roadmap.steps;
+            latestRoadmapCareer = match.roadmap.career_name || null;
+          }
+        }
+      } catch (err) {
+        console.warn("Backend history fetch failed:", err);
       }
     }
+
+    // Fallback: check localStorage for saved roadmap
+    if (!latestRoadmapSteps || latestRoadmapSteps.length === 0) {
+      const localHistory = readLocalHistory();
+      const match = (localHistory.assessments || []).find(a => a.session_id === currentSessionId);
+      if (match && match.roadmap && Array.isArray(match.roadmap.steps)) {
+        latestRoadmapSteps = match.roadmap.steps;
+        latestRoadmapCareer = match.roadmap.career_name || null;
+      }
+    }
+  }
+
+  // Collect completed step IDs from three sources (API > localStorage > DOM)
+  const apiCompletedSteps = new Set();
+  const localCompletedSteps = new Set();
+  const domCompletedSteps = new Set();
+
+  // 1. Try API first
+  try {
+    const res = await fetch(
+      `http://localhost:8001/api/tasks/${currentSessionId}`,
+    );
+    if (res.ok) {
+      const data = await res.json();
+      (data.steps || []).forEach((step) => apiCompletedSteps.add(String(step.step_id)));
+    }
   } catch (err) {
-    console.error("Failed to fetch progress:", err);
+    console.warn("API progress unavailable, falling back to local data:", err);
+  }
+
+  // 2. Read from localStorage
+  const localHistory = readLocalHistory();
+  (localHistory.progress || [])
+    .filter((p) => p.session_id === currentSessionId && p.completed)
+    .forEach((p) => localCompletedSteps.add(String(p.step_id)));
+
+  // 3. Read actual DOM checkbox states
+  document.querySelectorAll(".roadmap-task-checkbox").forEach((cb) => {
+    if (cb.checked && cb.dataset.stepId) {
+      domCompletedSteps.add(String(cb.dataset.stepId));
+    }
+  });
+
+  // Merge: API wins, then localStorage, then DOM
+  const allStepIds = new Set([
+    ...apiCompletedSteps,
+    ...localCompletedSteps,
+    ...domCompletedSteps,
+  ]);
+
+  const roadmapSteps = Array.isArray(latestRoadmapSteps)
+    ? latestRoadmapSteps
+    : [];
+  const normalizedSteps = roadmapSteps.length
+    ? roadmapSteps.map((step, index) => {
+        const stepId = String(step.step_id || step.order || index + 1);
+        return {
+          step_id: stepId,
+          step_title: step.title || `Step ${index + 1}`,
+          completed: allStepIds.has(stepId),
+        };
+      })
+    : Array.from(allStepIds).map((id) => ({
+        step_id: id,
+        step_title: `Step ${id}`,
+        completed: true,
+      }));
+
+  const completedCount = normalizedSteps.filter(
+    (step) => step.completed,
+  ).length;
+  const totalSteps = normalizedSteps.length || 0;
+  const percentage =
+    totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+
+  if (progressPanel) progressPanel.classList.remove("hidden");
+  if (progressStats) {
+    progressStats.textContent = `${completedCount}/${totalSteps} completed (${percentage}%)`;
+  }
+  if (progressStepList) {
+    progressStepList.innerHTML = "";
+    if (normalizedSteps.length > 0) {
+      normalizedSteps.forEach((step) => {
+        const li = document.createElement("li");
+        li.className = `progress-step-item ${step.completed ? "completed" : "pending"}`;
+        li.innerHTML = `<span class="step-title">${step.step_title}</span><span class="step-state">${step.completed ? "Done" : "Pending"}</span>`;
+        progressStepList.appendChild(li);
+      });
+    } else {
+      progressStepList.innerHTML =
+        "<li class='progress-step-item'>No roadmap saved yet.</li>";
+    }
+  }
+}
+
+// Update progress panel in real-time when checkboxes change
+function refreshProgressPanel() {
+  if (!progressPanel || progressPanel.classList.contains("hidden")) return;
+
+  const domCompletedSteps = new Set();
+  document.querySelectorAll(".roadmap-task-checkbox").forEach((cb) => {
+    if (cb.checked && cb.dataset.stepId) {
+      domCompletedSteps.add(String(cb.dataset.stepId));
+    }
+  });
+
+  const roadmapSteps = Array.isArray(latestRoadmapSteps)
+    ? latestRoadmapSteps
+    : [];
+  const normalizedSteps = roadmapSteps.map((step, index) => {
+    const stepId = String(step.step_id || step.order || index + 1);
+    return {
+      step_id: stepId,
+      step_title: step.title || `Step ${index + 1}`,
+      completed: domCompletedSteps.has(stepId),
+    };
+  });
+
+  const completedCount = normalizedSteps.filter(
+    (step) => step.completed,
+  ).length;
+  const totalSteps = normalizedSteps.length || 0;
+  const percentage =
+    totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+
+  if (progressStats) {
+    progressStats.textContent = `${completedCount}/${totalSteps} completed (${percentage}%)`;
+  }
+  if (progressStepList) {
+    progressStepList.innerHTML = "";
+    normalizedSteps.forEach((step) => {
+      const li = document.createElement("li");
+      li.className = `progress-step-item ${step.completed ? "completed" : "pending"}`;
+      li.innerHTML = `<span class="step-title">${step.step_title}</span><span class="step-state">${step.completed ? "Done" : "Pending"}</span>`;
+      progressStepList.appendChild(li);
+    });
   }
 }
 
@@ -818,13 +1103,61 @@ const roadmapDummyData = {
 const demoCareerOutput = {
   session_id: "demo-session",
   top_3_careers: [
-    { career_name: "Backend Developer", fit_score: 92, type: "tech", reasoning: "Design and build server-side applications using Python, Node.js, or Go.", matched_skills: ["Python", "SQL", "API Design"], missing_skills: ["Docker", "Kubernetes"], salary_range: "PKR 80,000 - 200,000", growth: "High" },
-    { career_name: "Full Stack Developer", fit_score: 88, type: "tech", reasoning: "Combine frontend and backend skills to build complete web applications.", matched_skills: ["JavaScript", "React"], missing_skills: ["PostgreSQL", "DevOps"], salary_range: "PKR 100,000 - 250,000", growth: "Very High" },
-    { career_name: "DevOps Engineer", fit_score: 85, type: "tech", reasoning: "Automate deployment pipelines and manage cloud infrastructure.", matched_skills: ["Linux", "Git"], missing_skills: ["Docker", "Kubernetes", "AWS"], salary_range: "PKR 120,000 - 300,000", growth: "Very High" },
-    { career_name: "Data Engineer", fit_score: 78, type: "tech", reasoning: "Build data pipelines and manage large-scale data systems.", matched_skills: ["Python", "SQL"], missing_skills: ["Apache Spark", "Airflow"], salary_range: "PKR 90,000 - 220,000", growth: "High" },
-    { career_name: "AI/ML Engineer", fit_score: 75, type: "tech", reasoning: "Develop machine learning models and AI solutions.", matched_skills: ["Python"], missing_skills: ["TensorFlow", "PyTorch", "MLOps"], salary_range: "PKR 100,000 - 280,000", growth: "Very High" }
+    {
+      career_name: "Backend Developer",
+      fit_score: 92,
+      type: "tech",
+      reasoning:
+        "Design and build server-side applications using Python, Node.js, or Go.",
+      matched_skills: ["Python", "SQL", "API Design"],
+      missing_skills: ["Docker", "Kubernetes"],
+      salary_range: "PKR 80,000 - 200,000",
+      growth: "High",
+    },
+    {
+      career_name: "Full Stack Developer",
+      fit_score: 88,
+      type: "tech",
+      reasoning:
+        "Combine frontend and backend skills to build complete web applications.",
+      matched_skills: ["JavaScript", "React"],
+      missing_skills: ["PostgreSQL", "DevOps"],
+      salary_range: "PKR 100,000 - 250,000",
+      growth: "Very High",
+    },
+    {
+      career_name: "DevOps Engineer",
+      fit_score: 85,
+      type: "tech",
+      reasoning:
+        "Automate deployment pipelines and manage cloud infrastructure.",
+      matched_skills: ["Linux", "Git"],
+      missing_skills: ["Docker", "Kubernetes", "AWS"],
+      salary_range: "PKR 120,000 - 300,000",
+      growth: "Very High",
+    },
+    {
+      career_name: "Data Engineer",
+      fit_score: 78,
+      type: "tech",
+      reasoning: "Build data pipelines and manage large-scale data systems.",
+      matched_skills: ["Python", "SQL"],
+      missing_skills: ["Apache Spark", "Airflow"],
+      salary_range: "PKR 90,000 - 220,000",
+      growth: "High",
+    },
+    {
+      career_name: "AI/ML Engineer",
+      fit_score: 75,
+      type: "tech",
+      reasoning: "Develop machine learning models and AI solutions.",
+      matched_skills: ["Python"],
+      missing_skills: ["TensorFlow", "PyTorch", "MLOps"],
+      salary_range: "PKR 100,000 - 280,000",
+      growth: "Very High",
+    },
   ],
-  career_fits: []
+  career_fits: [],
 };
 demoCareerOutput.career_fits = demoCareerOutput.top_3_careers;
 
@@ -832,24 +1165,98 @@ const demoRoadmapOutput = {
   career_name: "Backend Developer",
   total_duration: "1 year",
   current_level: "intermediate",
-  skill_gap_summary: "You have strong Python and API basics. Missing skills: Docker (DevOps), advanced PostgreSQL optimization, and CI/CD pipeline configuration. These are critical for senior backend roles and deployment readiness.",
+  skill_gap_summary:
+    "You have strong Python and API basics. Missing skills: Docker (DevOps), advanced PostgreSQL optimization, and CI/CD pipeline configuration. These are critical for senior backend roles and deployment readiness.",
   what_to_do_right_now: [
-    { title: "Complete FastAPI Tutorial", duration: "2 weeks", description: "Build a REST API with authentication and database integration." },
-    { title: "Learn Docker Basics", duration: "3 weeks", description: "Containerize your FastAPI app - this is the #1 missing skill for your career goals." }
+    {
+      title: "Complete FastAPI Tutorial",
+      duration: "2 weeks",
+      description:
+        "Build a REST API with authentication and database integration.",
+    },
+    {
+      title: "Learn Docker Basics",
+      duration: "3 weeks",
+      description:
+        "Containerize your FastAPI app - this is the #1 missing skill for your career goals.",
+    },
   ],
   steps: [
-    { step_id: 1, title: "Python and SQL Refresh", duration: "3 weeks", description: "Review core Python concepts, data structures, and practical SQL for backend work.", resources: ["https://docs.python.org/3/tutorial/", "https://www.postgresql.org/docs/"], targets_missing_skill: false },
-    { step_id: 2, title: "FastAPI and REST Basics", duration: "4 weeks", description: "Build REST APIs using FastAPI, validation, routing, and clean request/response handling.", resources: ["https://fastapi.tiangolo.com/", "https://www.restapitutorial.com/"], targets_missing_skill: false },
-    { step_id: 3, title: "Database Design", duration: "4 weeks", description: "Learn PostgreSQL schema design, ORM usage, migrations, and query optimization.", resources: ["https://www.postgresql.org/docs/", "https://www.sqlite.org/index.html"], targets_missing_skill: false },
-    { step_id: 4, title: "Docker and Deployment", duration: "3 weeks", description: "Containerize the app, understand images, and deploy a small backend project.", resources: ["https://docs.docker.com/", "https://hub.docker.com/"], targets_missing_skill: true },
-    { step_id: 5, title: "CI/CD Pipelines", duration: "3 weeks", description: "Automate testing and deployment using GitHub Actions or similar tools.", resources: ["https://github.com/features/actions", "https://martinfowler.com/articles/continuousIntegration.html"], targets_missing_skill: true },
-    { step_id: 6, title: "Portfolio Project Build", duration: "5 weeks", description: "Create one strong backend project and one small API project to show practical delivery.", resources: ["https://github.com/florinpop17/app-ideas"], targets_missing_skill: false }
-  ]
+    {
+      step_id: 1,
+      title: "Python and SQL Refresh",
+      duration: "3 weeks",
+      description:
+        "Review core Python concepts, data structures, and practical SQL for backend work.",
+      resources: [
+        "https://docs.python.org/3/tutorial/",
+        "https://www.postgresql.org/docs/",
+      ],
+      targets_missing_skill: false,
+    },
+    {
+      step_id: 2,
+      title: "FastAPI and REST Basics",
+      duration: "4 weeks",
+      description:
+        "Build REST APIs using FastAPI, validation, routing, and clean request/response handling.",
+      resources: [
+        "https://fastapi.tiangolo.com/",
+        "https://www.restapitutorial.com/",
+      ],
+      targets_missing_skill: false,
+    },
+    {
+      step_id: 3,
+      title: "Database Design",
+      duration: "4 weeks",
+      description:
+        "Learn PostgreSQL schema design, ORM usage, migrations, and query optimization.",
+      resources: [
+        "https://www.postgresql.org/docs/",
+        "https://www.sqlite.org/index.html",
+      ],
+      targets_missing_skill: false,
+    },
+    {
+      step_id: 4,
+      title: "Docker and Deployment",
+      duration: "3 weeks",
+      description:
+        "Containerize the app, understand images, and deploy a small backend project.",
+      resources: ["https://docs.docker.com/", "https://hub.docker.com/"],
+      targets_missing_skill: true,
+    },
+    {
+      step_id: 5,
+      title: "CI/CD Pipelines",
+      duration: "3 weeks",
+      description:
+        "Automate testing and deployment using GitHub Actions or similar tools.",
+      resources: [
+        "https://github.com/features/actions",
+        "https://martinfowler.com/articles/continuousIntegration.html",
+      ],
+      targets_missing_skill: true,
+    },
+    {
+      step_id: 6,
+      title: "Portfolio Project Build",
+      duration: "5 weeks",
+      description:
+        "Create one strong backend project and one small API project to show practical delivery.",
+      resources: ["https://github.com/florinpop17/app-ideas"],
+      targets_missing_skill: false,
+    },
+  ],
 };
 
 function updateRoadmapPhaseState(phase) {
-  const checkboxes = Array.from(phase.querySelectorAll(".roadmap-task-checkbox"));
-  const allChecked = checkboxes.length > 0 && checkboxes.every((checkbox) => checkbox.checked);
+  const checkboxes = Array.from(
+    phase.querySelectorAll(".roadmap-task-checkbox"),
+  );
+  const allChecked =
+    checkboxes.length > 0 && checkboxes.every((checkbox) => checkbox.checked);
   const statusChip = phase.querySelector(".roadmap-status-chip");
   const defaultStatus = phase.dataset.defaultStatus || "planned";
 
@@ -923,7 +1330,8 @@ function createRoadmapTaskItem(taskText, checked = false) {
 }
 
 function setupCustomChecklist() {
-  if (!roadmapCustomTaskInput || !roadmapAddTaskBtn || !roadmapCustomTaskList) return;
+  if (!roadmapCustomTaskInput || !roadmapAddTaskBtn || !roadmapCustomTaskList)
+    return;
 
   const addItem = () => {
     const taskText = roadmapCustomTaskInput.value.trim();
@@ -988,7 +1396,11 @@ function createChipList(items = []) {
   return list;
 }
 
-function renderListInto(container, items = [], emptyLabel = "No items available") {
+function renderListInto(
+  container,
+  items = [],
+  emptyLabel = "No items available",
+) {
   if (!container) return;
   clearNode(container);
 
@@ -1015,7 +1427,9 @@ function renderSkillGapModal(payload) {
     ? `Skills you still need: ${payload.career_name}`
     : "Skills you still need";
   skillsModalTitle.textContent = title;
-  skillsModalCopy.textContent = gapAnalysis.summary || "The app will show missing skills and next steps here.";
+  skillsModalCopy.textContent =
+    gapAnalysis.summary ||
+    "The app will show missing skills and next steps here.";
 
   renderListInto(
     skillsModalGapList,
@@ -1042,7 +1456,7 @@ function renderCareerRecommendations(payload) {
   }
 
   // Add user's name to heading if logged in or entered in form
-  const user = localStorage.getItem("career-counselor-user");
+  const user = sessionStorage.getItem("career-counselor-user");
   const userObj = user ? JSON.parse(user) : null;
   const submittedName = latestCareerSubmission?.name;
   const displayName = userObj?.username || submittedName;
@@ -1054,7 +1468,12 @@ function renderCareerRecommendations(payload) {
   }
 
   if (!topCareers.length) {
-    showInlineError(careerError, careerErrorText, careerRetryBtn, "No careers found. Please add your skills and interests in the form, then submit again.");
+    showInlineError(
+      careerError,
+      careerErrorText,
+      careerRetryBtn,
+      "No careers found. Please add your skills and interests in the form, then submit again.",
+    );
     return;
   }
 
@@ -1086,7 +1505,9 @@ function renderCareerRecommendations(payload) {
 
       const description = document.createElement("p");
       description.className = "career-description";
-      description.textContent = career.reasoning || "Fill in your skills and interests to get personalized career recommendations.";
+      description.textContent =
+        career.reasoning ||
+        "Fill in your skills and interests to get personalized career recommendations.";
 
       const skillsBlock = document.createElement("div");
       skillsBlock.className = "required-skills";
@@ -1114,7 +1535,8 @@ function renderCareerRecommendations(payload) {
         skillsBlock.appendChild(matchedList);
       } else {
         const emptyMsg = document.createElement("p");
-        emptyMsg.textContent = "No skills matched yet. Add more skills to your profile.";
+        emptyMsg.textContent =
+          "No skills matched yet. Add more skills to your profile.";
         skillsBlock.appendChild(emptyMsg);
       }
 
@@ -1142,8 +1564,43 @@ function renderCareerRecommendations(payload) {
     careerRecommendationPanel.hidden = false;
   }
 
-  if (skillGapsCard) {
-    skillGapsCard.hidden = true;
+  // Populate and show skill gaps section from top career match
+  if (skillGapsCard && skillGapsContent) {
+    const topCareer = topCareers[0];
+    const missingSkills = (topCareer.missing_skills || []).filter(Boolean);
+    const matchedSkills = (topCareer.matched_skills || []).filter(Boolean);
+
+    if (missingSkills.length > 0) {
+      clearNode(skillGapsContent);
+
+      const heading = document.createElement("h4");
+      heading.textContent = `Skills gap for: ${topCareer.career_name}`;
+      skillGapsContent.appendChild(heading);
+
+      const matchedBlock = document.createElement("div");
+      matchedBlock.className = "skill-gap-block";
+      const matchedLabel = document.createElement("p");
+      matchedLabel.className = "skill-heading matched";
+      matchedLabel.textContent = `Skills you have (${matchedSkills.length})`;
+      matchedBlock.appendChild(matchedLabel);
+      if (matchedSkills.length > 0) {
+        matchedBlock.appendChild(createChipList(matchedSkills));
+      }
+      skillGapsContent.appendChild(matchedBlock);
+
+      const gapsBlock = document.createElement("div");
+      gapsBlock.className = "skill-gap-block";
+      const gapsLabel = document.createElement("p");
+      gapsLabel.className = "skill-heading gaps";
+      gapsLabel.textContent = `Skills to learn (${missingSkills.length})`;
+      gapsBlock.appendChild(gapsLabel);
+      gapsBlock.appendChild(createChipList(missingSkills));
+      skillGapsContent.appendChild(gapsBlock);
+
+      skillGapsCard.hidden = false;
+    } else {
+      skillGapsCard.hidden = true;
+    }
   }
 }
 
@@ -1220,7 +1677,7 @@ function buildRoadmapPhase(step, index) {
   checkbox.dataset.stepId = step.step_id || step.order || index + 1;
   checkbox.dataset.stepTitle = step.title;
 
-  checkbox.addEventListener("change", async function() {
+  checkbox.addEventListener("change", async function () {
     const stepId = this.dataset.stepId;
     const stepTitle = this.dataset.stepTitle;
     checkboxLabel.classList.toggle("is-checked", this.checked);
@@ -1228,10 +1685,14 @@ function buildRoadmapPhase(step, index) {
     if (!currentSessionId) {
       currentSessionId = localStorage.getItem("career-counselor-session-id");
       if (!currentSessionId) {
-        const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
+        const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            const r = (Math.random() * 16) | 0,
+              v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          },
+        );
         currentSessionId = uuid;
         localStorage.setItem("career-counselor-session-id", currentSessionId);
       }
@@ -1254,10 +1715,15 @@ function buildRoadmapPhase(step, index) {
         completed_at: this.checked ? new Date().toISOString() : null,
         progress_percentage: progressResponse.progress_percentage,
       });
-      console.log(`Step ${stepId} marked ${this.checked ? "complete" : "incomplete"}`);
+      console.log(
+        `Step ${stepId} marked ${this.checked ? "complete" : "incomplete"}`,
+      );
     } catch (err) {
       console.error("Failed to save progress:", err);
     }
+
+    // Update progress panel in real-time if it's open
+    refreshProgressPanel();
   });
 
   checkboxLabel.appendChild(stepNum);
@@ -1308,7 +1774,8 @@ function renderRoadmapResponse(payload) {
     roadmapContent.hidden = false;
   }
 
-  if (targetRole) targetRole.textContent = payload.career_name || "Backend Developer";
+  if (targetRole)
+    targetRole.textContent = payload.career_name || "Backend Developer";
   if (timelineChip) {
     const selectedTimeline = roadmapRequest.timeline
       ? formatTitle(roadmapRequest.timeline)
@@ -1322,7 +1789,8 @@ function renderRoadmapResponse(payload) {
           "5years": 3,
         }[roadmapRequest.timeline] || 10
       : null;
-    const durationText = payload.total_duration || "Roadmap duration not returned";
+    const durationText =
+      payload.total_duration || "Roadmap duration not returned";
     timelineChip.textContent = weeklyHours
       ? `${selectedTimeline} · ${weeklyHours} hrs/week · ${durationText}`
       : `${selectedTimeline} · ${durationText}`;
@@ -1334,7 +1802,8 @@ function renderRoadmapResponse(payload) {
   // Display skill gap summary if available
   if (payload.skill_gap_summary) {
     if (skillGapInsight) skillGapInsight.hidden = false;
-    if (skillGapSummaryText) skillGapSummaryText.textContent = payload.skill_gap_summary;
+    if (skillGapSummaryText)
+      skillGapSummaryText.textContent = payload.skill_gap_summary;
   } else {
     if (skillGapInsight) skillGapInsight.hidden = true;
     if (skillGapSummaryText) skillGapSummaryText.textContent = "";
@@ -1356,7 +1825,8 @@ function renderRoadmapResponse(payload) {
 }
 
 async function openSkillsModal() {
-  if (!skillsModal || !latestCareerAssessment || !latestCareerSubmission) return;
+  if (!skillsModal || !latestCareerAssessment || !latestCareerSubmission)
+    return;
 
   skillsModal.hidden = false;
   skillsModal.setAttribute("aria-hidden", "false");
@@ -1368,16 +1838,19 @@ async function openSkillsModal() {
   }
 
   if (skillsModalCopy) {
-      skillsModalCopy.textContent = "Loading skills you still need...";
+    skillsModalCopy.textContent = "Loading skills you still need...";
   }
   renderListInto(skillsModalGapList, [], "Loading...");
   renderListInto(skillsModalStepList, [], "Loading...");
 
-  const targetCareer = (latestCareerAssessment.top_3_careers || latestCareerAssessment.career_fits || [])[0];
+  const targetCareer = (latestCareerAssessment.top_3_careers ||
+    latestCareerAssessment.career_fits ||
+    [])[0];
   const analysisPayload = {
     session_id: latestCareerAssessment.session_id || null,
     user_id: getCurrentUserId(),
-    target_role: targetCareer?.career_name || latestCareerSubmission.career_topic || "",
+    target_role:
+      targetCareer?.career_name || latestCareerSubmission.career_topic || "",
     skills_data: latestCareerSubmission.skills || [],
     experience: latestCareerSubmission.additional_info || "",
     education: latestCareerSubmission.education_level || "",
@@ -1385,7 +1858,8 @@ async function openSkillsModal() {
 
   if (!analysisPayload.skills_data.length) {
     if (skillsModalCopy) {
-      skillsModalCopy.textContent = "Add your current skills in the assessment form first.";
+      skillsModalCopy.textContent =
+        "Add your current skills in the assessment form first.";
     }
     renderListInto(skillsModalGapList, [], "No analysis available.");
     renderListInto(skillsModalStepList, [], "No recommendations available.");
@@ -1393,7 +1867,10 @@ async function openSkillsModal() {
   }
 
   try {
-    latestSkillGapAnalysis = await postEndpointData("api/skill-gap-analysis", analysisPayload);
+    latestSkillGapAnalysis = await postEndpointData(
+      "api/skill-gap-analysis",
+      analysisPayload,
+    );
     updateLocalAssessmentSession(analysisPayload.session_id, (entry) => ({
       ...entry,
       skill_gap_analysis: latestSkillGapAnalysis,
@@ -1465,12 +1942,28 @@ careerForm.addEventListener("submit", async (e) => {
   const skillsValid = validateChipConstraint(skillsContainer);
   const industriesValid = validateChipConstraint(industriesContainer);
 
-  if (!interestsValid || !skillsValid || !industriesValid) {
-    let errorMsg = "Please fix the following:\n";
-    if (!interestsValid) errorMsg += "- Interests: Select between 2 and 5 options\n";
-    if (!skillsValid) errorMsg += "- Skills: Select between 2 and 5 options\n";
-    if (!industriesValid) errorMsg += "- Industries: Select between 1 and 2 options\n";
-    showErrorBanner(errorMsg);
+  const invalidFields = [];
+  if (!interestsValid) invalidFields.push({ container: interestsContainer, label: "Interests", min: 2, max: 5 });
+  if (!skillsValid) invalidFields.push({ container: skillsContainer, label: "Skills", min: 2, max: 5 });
+  if (!industriesValid) invalidFields.push({ container: industriesContainer, label: "Industries", min: 1, max: 2 });
+
+  if (invalidFields.length > 0) {
+    const first = invalidFields[0];
+    const field = first.container.closest(".field");
+    const legend = field?.querySelector("legend");
+
+    const existingError = field?.querySelector(".chip-error-msg");
+    if (existingError) existingError.remove();
+
+    if (field && legend) {
+      const errorMsg = document.createElement("div");
+      errorMsg.className = "chip-error-msg";
+      errorMsg.textContent = `${first.label}: Select between ${first.min} and ${first.max} options`;
+      field.appendChild(errorMsg);
+      setTimeout(() => errorMsg.remove(), 5000);
+    }
+
+    if (first.container) first.container.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
@@ -1483,12 +1976,16 @@ careerForm.addEventListener("submit", async (e) => {
     if (careerRecommendationPanel) careerRecommendationPanel.hidden = true;
     if (careerError) careerError.hidden = true;
     if (skillGapsCard) skillGapsCard.hidden = true;
+    if (skillGapsContent) skillGapsContent.innerHTML = "";
     const careerContent = document.getElementById("career-content");
     if (careerContent) careerContent.hidden = true;
 
     // Start loading animation
     if (careerSpinnerInterval) clearInterval(careerSpinnerInterval);
-    careerSpinnerInterval = startLoadingText("career-spinner-text", careerLoadingTexts);
+    careerSpinnerInterval = startLoadingText(
+      "career-spinner-text",
+      careerLoadingTexts,
+    );
 
     try {
       const response = await postEndpointData("api/assess", {
@@ -1519,14 +2016,17 @@ careerForm.addEventListener("submit", async (e) => {
       careerSpinnerInterval = stopLoadingText(careerSpinnerInterval);
       if (careerContent) careerContent.hidden = false;
       renderCareerRecommendations(response);
+      if (getCurrentUserId()) loadHistory();
     } catch (error) {
       console.error("Career recommendation request failed:", error);
       if (careerSpinner) careerSpinner.hidden = true;
       careerSpinnerInterval = stopLoadingText(careerSpinnerInterval);
       if (careerContent) careerContent.hidden = true;
-      let msg = "Failed to get recommendations. Make sure the backend is running (localhost:8001) and try again.";
+      let msg =
+        "Failed to get recommendations. Make sure the backend is running (localhost:8001) and try again.";
       if (error.message && error.message.includes("503")) {
-        msg = "AI service temporarily unavailable (rate limited). Try again in a few minutes.";
+        msg =
+          "AI service temporarily unavailable (rate limited). Try again in a few minutes.";
       }
       showInlineError(careerError, careerErrorText, careerRetryBtn, msg);
     }
@@ -1562,13 +2062,20 @@ roadmapForm.addEventListener("submit", async (e) => {
 
     // Start loading animation
     if (roadmapSpinnerInterval) clearInterval(roadmapSpinnerInterval);
-    roadmapSpinnerInterval = startLoadingText("roadmap-spinner-text", roadmapLoadingTexts);
+    roadmapSpinnerInterval = startLoadingText(
+      "roadmap-spinner-text",
+      roadmapLoadingTexts,
+    );
 
     try {
       // Extract skill gaps from latest career assessment
       let missingSkills = [];
       let currentSkills = [];
-      if (latestCareerAssessment && latestCareerAssessment.career_fits && latestCareerAssessment.career_fits.length > 0) {
+      if (
+        latestCareerAssessment &&
+        latestCareerAssessment.career_fits &&
+        latestCareerAssessment.career_fits.length > 0
+      ) {
         const targetCareer = latestCareerAssessment.career_fits[0];
         missingSkills = targetCareer.missing_skills || [];
         currentSkills = targetCareer.matched_skills || [];
@@ -1587,19 +2094,25 @@ roadmapForm.addEventListener("submit", async (e) => {
       if (roadmapSpinner) roadmapSpinner.hidden = true;
       roadmapSpinnerInterval = stopLoadingText(roadmapSpinnerInterval);
       if (roadmapContent) roadmapContent.hidden = false;
-      updateLocalAssessmentSession(response.session_id || sessionId, (entry) => ({
-        ...entry,
-        roadmap: response,
-      }));
+      updateLocalAssessmentSession(
+        response.session_id || sessionId,
+        (entry) => ({
+          ...entry,
+          roadmap: response,
+        }),
+      );
       renderRoadmapResponse(response);
+      if (getCurrentUserId()) loadHistory();
     } catch (error) {
       console.error("Roadmap request failed:", error);
       if (roadmapSpinner) roadmapSpinner.hidden = true;
       roadmapSpinnerInterval = stopLoadingText(roadmapSpinnerInterval);
       if (roadmapContent) roadmapContent.hidden = true;
-      let msg = "Failed to generate roadmap. Make sure the backend is running (localhost:8001) and try again.";
+      let msg =
+        "Failed to generate roadmap. Make sure the backend is running (localhost:8001) and try again.";
       if (error.message && error.message.includes("503")) {
-        msg = "AI service temporarily unavailable (rate limited). Try again in a few minutes.";
+        msg =
+          "AI service temporarily unavailable (rate limited). Try again in a few minutes.";
       }
       showInlineError(roadmapError, roadmapErrorText, roadmapRetryBtn, msg);
     }
@@ -1614,17 +2127,31 @@ if (careerDemoBtn) {
   careerDemoBtn.addEventListener("click", () => {
     if (!careerForm) return;
     careerForm.querySelector("#name").value = careerDummyData.name;
-    careerForm.querySelector("#education_level").value = careerDummyData.education_level;
+    careerForm.querySelector("#education_level").value =
+      careerDummyData.education_level;
     careerForm.querySelector("#goals").value = careerDummyData.goals;
     careerForm.querySelector("#location").value = careerDummyData.location;
     careerForm.querySelector("#notes").value = careerDummyData.notes;
-    setChipSelections(careerForm.querySelector("#interests-chips"), careerDummyData.interests, careerDummyData.custom_interest);
-    setChipSelections(careerForm.querySelector("#skills-chips"), careerDummyData.skills, careerDummyData.custom_skill);
-    setChipSelections(careerForm.querySelector("#industries-chips"), careerDummyData.industries, careerDummyData.custom_industry);
+    setChipSelections(
+      careerForm.querySelector("#interests-chips"),
+      careerDummyData.interests,
+      careerDummyData.custom_interest,
+    );
+    setChipSelections(
+      careerForm.querySelector("#skills-chips"),
+      careerDummyData.skills,
+      careerDummyData.custom_skill,
+    );
+    setChipSelections(
+      careerForm.querySelector("#industries-chips"),
+      careerDummyData.industries,
+      careerDummyData.custom_industry,
+    );
     latestCareerSubmission = buildCareerFormData(careerForm);
     currentSessionId = demoCareerOutput.session_id;
     saveDemoCareerHistory();
     if (careerOutput) {
+      careerOutput.hidden = false;
       renderCareerRecommendations(demoCareerOutput);
     }
     document.getElementById("career").scrollIntoView({ behavior: "smooth" });
@@ -1635,9 +2162,11 @@ const roadmapDemoBtn = document.getElementById("roadmap-demo-btn");
 if (roadmapDemoBtn) {
   roadmapDemoBtn.addEventListener("click", () => {
     if (!roadmapForm) return;
-    roadmapForm.querySelector("#career_topic").value = roadmapDummyData.career_topic;
+    roadmapForm.querySelector("#career_topic").value =
+      roadmapDummyData.career_topic;
     roadmapForm.querySelector("#timeline").value = roadmapDummyData.timeline;
-    roadmapForm.querySelector("#current_status").value = roadmapDummyData.current_status;
+    roadmapForm.querySelector("#current_status").value =
+      roadmapDummyData.current_status;
     roadmapForm.querySelector("#notes").value = roadmapDummyData.notes;
     latestRoadmapSubmission = buildRoadmapFormData(roadmapForm);
     saveDemoRoadmapHistory();
@@ -1683,7 +2212,9 @@ document.addEventListener("click", (e) => {
   if (roadmapForm && typeof roadmapForm.requestSubmit === "function") {
     roadmapForm.requestSubmit();
   } else if (roadmapForm) {
-    roadmapForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    roadmapForm.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
   }
 });
 

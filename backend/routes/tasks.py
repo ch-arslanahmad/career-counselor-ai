@@ -147,29 +147,64 @@ def get_session_progress(session_id: str, db=Depends(get_optional_db)):
             "note": "Database not available",
         }
 
-    from models import TaskProgress
+    from models import TaskProgress, AssessmentHistory
 
-    steps = (
+    # Get completed step IDs for this session
+    completed_steps = (
         db.query(TaskProgress)
         .filter(TaskProgress.session_id == session_id)
-        .order_by(TaskProgress.step_id)
         .all()
     )
+    completed_step_ids = {step.step_id for step in completed_steps}
 
-    completed_steps = [
-        {
-            "step_id": step.step_id,
-            "step_title": step.step_title or f"Step {step.step_id}",
-            "completed": True,
-            "completed_at": _format_datetime(step.completed_at),
-        }
-        for step in steps
-    ]
+    # Try to get the full roadmap from AssessmentHistory
+    assessment = (
+        db.query(AssessmentHistory)
+        .filter(AssessmentHistory.session_id == session_id)
+        .order_by(AssessmentHistory.created_at.desc())
+        .first()
+    )
+
+    steps = []
+    if assessment and assessment.career_results:
+        try:
+            results = assessment.career_results
+            if isinstance(results, str):
+                import json
+                results = json.loads(results)
+            roadmap_data = results.get("roadmap", {})
+            roadmap_steps = roadmap_data.get("steps", []) if isinstance(roadmap_data, dict) else []
+            
+            for step in roadmap_steps:
+                step_id = step.get("step_id") or step.get("order") or 0
+                steps.append({
+                    "step_id": step_id,
+                    "step_title": step.get("title", f"Step {step_id}"),
+                    "completed": step_id in completed_step_ids,
+                })
+        except Exception:
+            pass
+
+    # If no roadmap found, return just completed steps
+    if not steps:
+        steps = [
+            {
+                "step_id": step.step_id,
+                "step_title": step.step_title or f"Step {step.step_id}",
+                "completed": True,
+                "completed_at": _format_datetime(step.completed_at),
+            }
+            for step in completed_steps
+        ]
+
+    completed_count = sum(1 for s in steps if s.get("completed"))
+    total_steps = len(steps)
+    completion_percentage = (completed_count / total_steps * 100) if total_steps > 0 else 0.0
 
     return {
         "session_id": session_id,
-        "steps": completed_steps,
-        "completed_count": len(completed_steps),
-        "total_steps": len(completed_steps),
-        "completion_percentage": 100.0 if completed_steps else 0.0,
+        "steps": steps,
+        "completed_count": completed_count,
+        "total_steps": total_steps,
+        "completion_percentage": completion_percentage,
     }
