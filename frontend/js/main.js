@@ -184,13 +184,11 @@ if (demoLoginBtn) {
           }),
         );
         loginModal.hidden = true;
-updateAuthUI();
-loadHistory();
+        updateAuthUI();
         loadHistory();
       } else {
-        alert(
-          "Demo user not found. Register first or use different credentials.",
-        );
+        const errData = await res.json();
+        alert(errData.detail || "Demo user not found. Run seed_demo.py first.");
       }
     } catch (err) {
       alert("Connection error. Make sure backend is running.");
@@ -214,8 +212,10 @@ const historyPersistLoginBtn = document.getElementById("history-persist-login-bt
 const historyLoginRequired = document.getElementById("history-login-required");
 const historyAssessments = document.getElementById("history-assessments");
 const historyProgress = document.getElementById("history-progress");
+const historySavedProgress = document.getElementById("history-saved-progress");
 const assessmentList = document.getElementById("assessment-list");
 const progressList = document.getElementById("progress-list");
+const savedProgressList = document.getElementById("saved-progress-list");
 const historySourceNote = document.getElementById("history-source-note");
 
 if (historyLoginBtn) {
@@ -234,12 +234,14 @@ async function loadHistory() {
   const userId = getCurrentUserId();
   let data = { assessments: [], progress: [] };
 
-  // Clear any stale empty-state messages
   const historyContent = document.getElementById("history-content");
   if (historyContent) {
     const oldEmpty = historyContent.querySelector(".history-empty-state");
     if (oldEmpty) oldEmpty.remove();
   }
+
+  // Hide all sections first
+  if (historyLoginRequired) historyLoginRequired.classList.add("hidden");
 
   if (userId) {
     // Logged in: fetch from DB
@@ -254,7 +256,35 @@ async function loadHistory() {
       console.error("Failed to load history from DB:", err);
     }
 
-    // Also fetch session task progress
+    // Fetch saved progress for each assessment session
+    const savedProgress = [];
+    for (const assessment of data.assessments) {
+      if (assessment.session_id) {
+        try {
+          const progressRes = await fetch(
+            `http://localhost:8001/api/tasks/${assessment.session_id}`,
+          );
+          if (progressRes.ok) {
+            const progressData = await progressRes.json();
+            if (progressData.steps && progressData.steps.length > 0) {
+              savedProgress.push({
+                session_id: assessment.session_id,
+                career: assessment.top_careers?.[0] || assessment.name || "Unknown",
+                steps: progressData.steps,
+                completed_count: progressData.completed_count || 0,
+                total_steps: progressData.total_steps || 0,
+                percentage: progressData.completion_percentage || 0,
+              });
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load progress for session:", assessment.session_id, err);
+        }
+      }
+    }
+    data.saved_progress = savedProgress;
+
+    // Also load current session progress
     const sessionId =
       currentSessionId || localStorage.getItem("career-counselor-session-id");
     if (sessionId) {
@@ -275,6 +305,7 @@ async function loadHistory() {
   } else {
     // Not logged in: use localStorage
     data = readLocalHistory();
+    data.saved_progress = [];
   }
 
   // Update source note
@@ -291,15 +322,6 @@ async function loadHistory() {
     } else {
       historyDemoSection.classList.remove("hidden");
     }
-  }
-
-  // Hide login-required prompt when loading
-  if (historyLoginRequired) historyLoginRequired.classList.add("hidden");
-
-  // Hide persist warning for logged-in users
-  const persistWarning = document.getElementById("history-persist-warning");
-  if (persistWarning) {
-    persistWarning.classList.toggle("hidden", !!userId);
   }
 
   // Render assessments
@@ -323,7 +345,7 @@ async function loadHistory() {
     }
   }
 
-  // Render progress
+  // Render completed steps
   if (historyProgress && progressList) {
     if (data.progress && data.progress.length > 0) {
       historyProgress.classList.remove("hidden");
@@ -342,8 +364,37 @@ async function loadHistory() {
     }
   }
 
+  // Render saved progress per assessment
+  if (historySavedProgress && savedProgressList) {
+    const allSaved = data.saved_progress || [];
+    if (allSaved.length > 0) {
+      historySavedProgress.classList.remove("hidden");
+      savedProgressList.innerHTML = allSaved
+        .map(
+          (sp) => `
+        <div class="saved-progress-item">
+          <div>
+            <span class="step-title">${sp.career}</span>
+            <span class="step-meta">${sp.completed_count}/${sp.total_steps} steps (${Math.round(sp.percentage)}%)</span>
+          </div>
+          <span class="step-badge ${sp.percentage === 100 ? 'completed' : 'pending'}">${sp.percentage === 100 ? 'Complete' : 'In Progress'}</span>
+        </div>
+        ${sp.steps.map(s => `
+        <div class="saved-progress-item" style="margin-left: 20px;">
+          <div>
+            <span class="step-title">${s.step_title || 'Step ' + s.step_id}</span>
+          </div>
+          <span class="step-badge ${s.completed ? 'completed' : 'pending'}">${s.completed ? 'Done' : 'Pending'}</span>
+        </div>`).join('')}`,
+        )
+        .join("");
+    } else {
+      historySavedProgress.classList.add("hidden");
+    }
+  }
+
   // Show empty state if no data
-  const hasAnyData = (data.assessments && data.assessments.length > 0) || (data.progress && data.progress.length > 0);
+  const hasAnyData = (data.assessments && data.assessments.length > 0) || (data.progress && data.progress.length > 0) || (data.saved_progress && data.saved_progress.length > 0);
   if (!hasAnyData && historyContent && !historyContent.querySelector(".history-empty-state")) {
     const emptyState = document.createElement("div");
     emptyState.className = "history-empty-state";
@@ -378,9 +429,26 @@ function loadDemoHistory() {
     { career_topic: "Backend Developer", step_title: "FastAPI and REST Basics", completed_at: "2026-05-18T14:30:00Z" },
   ];
 
+  const demoSavedProgress = [
+    {
+      career: "Backend Developer",
+      completed_count: 3,
+      total_steps: 6,
+      percentage: 50,
+      steps: [
+        { step_id: 1, step_title: "Deepen Language Fundamentals", completed: true },
+        { step_id: 2, step_title: "Learn API Development", completed: true },
+        { step_id: 3, step_title: "Database Mastery", completed: true },
+        { step_id: 4, step_title: "Version Control & Collaboration", completed: false },
+        { step_id: 5, step_title: "Build Portfolio Projects", completed: false },
+        { step_id: 6, step_title: "DevOps Basics", completed: false },
+      ],
+    },
+  ];
+
   localStorage.setItem(
     "career-counselor-local-history",
-    JSON.stringify({ assessments: demoAssessments, progress: demoProgress }),
+    JSON.stringify({ assessments: demoAssessments, progress: demoProgress, saved_progress: demoSavedProgress }),
   );
 
   if (historyAssessments) {
@@ -419,11 +487,35 @@ function loadDemoHistory() {
     }
   }
 
-  const persistWarning = document.getElementById("history-persist-warning");
-  if (persistWarning) persistWarning.classList.remove("hidden");
+  if (historySavedProgress && savedProgressList) {
+    historySavedProgress.classList.remove("hidden");
+    savedProgressList.innerHTML = demoSavedProgress
+      .map(
+        (sp) => `
+      <div class="saved-progress-item">
+        <div>
+          <span class="step-title">${sp.career}</span>
+          <span class="step-meta">${sp.completed_count}/${sp.total_steps} steps (${sp.percentage}%)</span>
+        </div>
+        <span class="step-badge pending">In Progress</span>
+      </div>
+      ${sp.steps.map(s => `
+      <div class="saved-progress-item" style="margin-left: 20px;">
+        <div>
+          <span class="step-title">${s.step_title}</span>
+        </div>
+        <span class="step-badge ${s.completed ? 'completed' : 'pending'}">${s.completed ? 'Done' : 'Pending'}</span>
+      </div>`).join('')}`,
+      )
+      .join("");
+  }
 
   if (historySourceNote) {
     historySourceNote.textContent = "Demo history loaded from sample data.";
+  }
+
+  if (historyDemoSection) {
+    historyDemoSection.classList.add("hidden");
   }
 
   const demoBtn = document.getElementById("history-demo-btn");
