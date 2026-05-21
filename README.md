@@ -2,6 +2,20 @@
 
 A web-based AI career counseling system that recommends career paths based on user interests and background, with personalized learning roadmaps and skill-gap analysis.
 
+## Demo
+
+### Career Recommendation
+
+![Recommendation Page](docs/recommendation-page.png)
+
+![Recommendation Result](docs/recommendation-result-v2.png)
+
+### Roadmap Generation
+
+![Roadmap Page](docs/roadmap-page.png)
+
+![Roadmap Result](docs/roadmap-result-v2.png)
+
 ## Features
 
 - **Career Recommendation** — AI-powered career matching with fit scores, reasoning, and skill-gap analysis
@@ -134,20 +148,6 @@ Backend API: http://localhost:8001
 ### Database Setup
 
 Create a MariaDB/MySQL database named `career_counselor` and configure `backend/.env` from `backend/.env.example`.
-
-## Demo
-
-### Career Recommendation
-
-![Recommendation Page](docs/recommendation-page.png)
-
-![Recommendation Result](docs/recommendation-result-v2.png)
-
-### Roadmap Generation
-
-![Roadmap Page](docs/roadmap-page.png)
-
-![Roadmap Result](docs/roadmap-result-v2.png)
 
 ## License
 
