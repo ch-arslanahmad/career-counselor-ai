@@ -11,7 +11,7 @@
 We transformed your project from a vague 5-phase plan into a **locked, executable specification** with:
 
 11 core features (final, no changes)  
-Database design with O*NET integration  
+Database-backed career data and roadmap tracking  
 4 parallel AI agents working together  
 Clear tasks for your classmates  
 Day-by-day execution timeline  
@@ -36,7 +36,7 @@ Day-by-day execution timeline
 **Time:** They spend 12-14 hours on this  
 
 ### 4. **REFERENCE:** `docs/ARCHITECTURE.md`
-**What:** Updated with new DB design + O*NET approach  
+**What:** Updated with the current DB design and application flow  
 **Why:** Explains why we made these architectural choices  
 **Time:** 15 mins to skim  
 
@@ -51,7 +51,7 @@ Day-by-day execution timeline
 
 | Aspect | Original | Now |
 |--------|----------|-----|
-| Database | Phase 2 | Phase 1 (needed for O*NET) |
+| Database | Phase 2 | Phase 1 (needed for persistence and tracking) |
 | Features | 20+ ambitious | 11 focused (locked) |
 | Frontend | Vanilla JS | Vanilla JS (React as Phase 2 only) |
 | Execution | Sequential | Parallel (4 agents) |
@@ -92,9 +92,9 @@ The 11 features are LOCKED. Adding anything derails the timeline.
 
 Current MVP is Vanilla JS. ARCHITECTURE.md mentions React as planned enhancement. Easy to remove that section if professor questions it.
 
-**O*NET is essential**
+**Database is essential**
 
-It's why we need a database. The justification is: "DB holds verified O*NET data, AI adds personalization on top." This makes sense to professors.
+It stores the career catalog, required skills, roadmap steps, assessments, and progress so AI can personalize on top of persistent data.
 
 **Your classmates have clear tasks**
 
@@ -107,7 +107,7 @@ They don't need to know how to code. Just read `CLASSMATE_TASKS.md` and execute.
 | Agent | Focus | Time |
 |-------|-------|------|
 | **Agent 1** | FastAPI backend + Claude API wrapper | 12-14 hrs |
-| **Agent 2** | MySQL database + O*NET seed script | 10-12 hrs |
+| **Agent 2** | MySQL database + seed script | 10-12 hrs |
 | **Agent 3** | Frontend forms + API integration | 14-16 hrs |
 | **Agent 4** | Documentation + UML + test cases | 12-14 hrs |
 
@@ -118,7 +118,7 @@ All work in parallel. You coordinate + review.
 ## Success Looks Like
 
 All 11 features working  
-Database populated from O*NET  
+Database populated with local project data  
 FastAPI serving requests locally  
 Frontend displaying results properly  
 Task tracking works (mark tasks done)  

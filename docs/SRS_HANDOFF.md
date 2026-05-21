@@ -80,7 +80,6 @@ TABLE OF CONTENTS (auto-generated in Word)
 1.4 Definitions & Abbreviations
 
 - MVP: Minimum Viable Product
-- O*NET: Occupational Information Network
 - API: Application Programming Interface
 - UI: User Interface
 - SRS: Software Requirements Specification
@@ -129,7 +128,7 @@ Example:
 - Frontend: Web browser (Chrome, Firefox, Safari)
 - Backend: Linux server with Python runtime
 - Database: MySQL 8.0+
-- External APIs: O*NET public API, Claude/OpenAI LLM
+- External APIs: Claude/OpenAI LLM
 ```
 
 ---
@@ -186,7 +185,7 @@ Source: SPECIFICATION.md, Feature #2, Line [XX]
 - FR-006: Profile Skill Gap Analysis (no CV upload parsing in MVP)
 - FR-007: Career Type Flags
 - FR-008: Pakistan-Specific Careers
-- FR-009: O*NET Integration
+- FR-009: Data-backed career catalog
 
 **Do NOT include technical implementation details** (e.g., database schema, API code) — only WHAT the system does.
 
@@ -222,7 +221,7 @@ Source: SPECIFICATION.md, Feature #2, Line [XX]
 4.4 Reliability
 
 - System uptime: 95%+
-- Fallback to hardcoded O*NET data if API is down
+- Fallback to local seed data if the database is unavailable
 
 4.5 Maintainability
 
@@ -314,7 +313,7 @@ Success Criteria:
 
 - Users have internet connectivity
 - Users are familiar with web forms
-- O*NET API is accessible (fallback to seed data if not)
+- Local seed data is available (fallback if the database is not ready)
 - Users will provide honest information about their skills
 
 6.2 Constraints
@@ -322,7 +321,7 @@ Success Criteria:
 - MVP uses vanilla JavaScript (no React)
 - No user authentication in Phase 1
 - Limited to 50 careers in initial seed
-- API response time limited by O*NET API speed
+- API response time limited by local backend and model latency
 - Development deadline: May 20, 2026
 
 6.3 Open Issues

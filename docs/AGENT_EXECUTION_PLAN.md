@@ -1,7 +1,7 @@
 # Career Counselor AI - Agent Execution Plan
 
 **Deadline:** May 19 (testing), May 20 (presentation)  
-**Scope:** 11 features + DB + API + O*NET + Documentation  
+**Scope:** 11 features + DB + API + Documentation  
 **Execution Strategy:** Parallel AI agents + human review
 
 ---
@@ -9,7 +9,7 @@
 ## Overview
 
 Instead of building sequentially, we parallelize:
-- **Agent 1:** Backend API + O*NET seed script
+- **Agent 1:** Backend API + local seed script
 - **Agent 2:** Database schema + migrations
 - **Agent 3:** Frontend HTML/JS + API integration
 - **Agent 4:** Documentation (SRS, UML, Feasibility, Test cases)
@@ -51,7 +51,7 @@ Instead of building sequentially, we parallelize:
 
 ---
 
-### Agent 2: Database & O*NET Integration
+### Agent 2: Database Integration
 **Responsibility:** Database schema + seed script
 
 **Deliverables:**
@@ -60,16 +60,9 @@ Instead of building sequentially, we parallelize:
    - Session management
    - Connection pooling
 
-2. `backend/scripts/seed_onet.py` — O*NET population script
-   - Fetch from O*NET API (services.onetcenter.org)
-   - Parse occupation data
-   - Populate careers, skills, career_skills tables
-   - Fallback: Use `backend/seeds/onet_fallback.json` if API fails
-
-3. `backend/seeds/onet_fallback.json` — Hardcoded seed data
-   - 50+ occupations (tech, business, creative, healthcare)
-   - Skills per occupation
-   - Growth outlook, education requirements
+2. `backend/seed_demo.py` — demo user and progress seed script
+   - Create a demo user
+   - Seed assessment history and progress records
 
 4. `backend/migrations/` — Optional Alembic migrations
    - Schema versioning (if needed)
@@ -78,7 +71,6 @@ Instead of building sequentially, we parallelize:
    ```
    DATABASE_URL=mysql+mysqlconnector://user:password@localhost/career_counselor
    CLAUDE_API_KEY=sk-...
-   ONET_USERNAME=your_username (if required)
    ```
 
 **Time Estimate:** 10-12 hours  
@@ -181,7 +173,7 @@ Instead of building sequentially, we parallelize:
 |------|---|---|---|---|
 | 9am-12pm | Define endpoint structure, set up FastAPI skeleton | Define SQLAlchemy models, schema | Structure HTML pages, setup CSS | Review SPECIFICATION.md, coordinate |
 | 12pm-1pm | — | — | — | **LUNCH BREAK** |
-| 1pm-5pm | Implement first 4 endpoints | O*NET seed script structure, fallback JSON | Intake form + validation, JS scaffolding | Review Agent outputs, merge code |
+| 1pm-5pm | Implement first 4 endpoints | Seed script structure, local JSON | Intake form + validation, JS scaffolding | Review Agent outputs, merge code |
 
 ### Day 1 — Evening
 
@@ -259,9 +251,7 @@ backend/
 backend/
 ├── database.py
 ├── scripts/
-│   └── seed_onet.py
-└── seeds/
-    └── onet_fallback.json
+│   └── seed_demo.py
 ```
 
 ### Agent 3 Deliverables

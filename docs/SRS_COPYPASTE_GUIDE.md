@@ -89,12 +89,12 @@ Student Requirements:
 ```
 Career Counselor AI is a student progress tracking and career guidance system that:
 1. Assesses student skills and interests via intake form
-2. Recommends matching careers with fit scores using verified O*NET data
+2. Recommends matching careers with fit scores using database-backed career data
 3. Generates personalized learning roadmaps with timeline adjustment
 4. Optionally tracks skill progress through roadmap completion
 5. Provides contextual analysis of student profiles against career requirements
 
-Core Innovation: Database-backed career taxonomy (O*NET) + AI personalization layer 
+Core Innovation: Database-backed career taxonomy + AI personalization layer 
 = accurate, maintainable, scalable guidance.
 ```
 
@@ -153,11 +153,11 @@ Copy all 6 endpoints:
 CONSTRAINTS:
 - No user accounts in MVP — session-based (UUID) only
 - Vanilla JS frontend — no build tools, no React in Phase 1
-- O*NET API dependency — fallback to hardcoded seed if unavailable
+- Local seed dependency — fallback to hardcoded seed if unavailable
 - 9 locked features — no new features until Phase 2
 
 ASSUMPTIONS:
-- Users have internet for O*NET API calls
+- Users have internet for API calls
 - Database is local MySQL (Phase 1)
 - Student can dedicate 5-30 hours/week for learning
 - Career taxonomy is pre-computed (not AI-generated)

@@ -10,7 +10,7 @@
 
 ## Session Startup (Must Do First)
 
-1. **Read** `docs/SPECIFICATION.md` (source of truth: 9 locked features, 7 DB tables, 6 API endpoints, O*NET strategy)
+1. **Read** `docs/SPECIFICATION.md` (source of truth: locked features, DB tables, and API endpoints)
 2. **Read** `docs/AGENT_EXECUTION_PLAN.md` (if working in parallel, check agent assignments and deliverables)
 3. **Check** `docs/todo.md` for current task status, claim your task by marking `[-] Name (Date)`
 4. **Consult** `.github/skills/git-workflow.md` before any commit (branch strategy: `main` → `dev` → `feature/*`)
@@ -38,8 +38,8 @@ Frontend (Vanilla JS)  →  FastAPI Backend  →  MariaDB (AI-generated careers/
 
 - **Frontend**: `frontend/index.html` (2 forms: Career Assessment + Roadmap) + `frontend/js/main.js` (form logic, API calls) + `frontend/css/style.css`
 - **Backend**: `backend/main.py` (FastAPI) + `backend/services/` (AI integration) + `backend/database.py` (SQLAlchemy ORM)
-- **Database**: 3 tables (task_progress, student_assessments, career_fits) — for session tracking only
-- **Data Source**: AI generates careers and roadmaps dynamically (no DB fixtures)
+- **Database**: session tracking, assessments, career fits, and roadmap progress
+- **Data Source**: AI generates recommendations dynamically on top of database-backed project data
 - **API Endpoints**: `/api/assess`, `/api/roadmap`, `/api/skill-gap-analysis`, `/api/tasks`, `/options/*`
 
 ---
@@ -77,7 +77,7 @@ Frontend (Vanilla JS)  →  FastAPI Backend  →  MariaDB (AI-generated careers/
 **Agent action:** Check if other agents are working in parallel. If yes, sync on DB schema and API contracts first.
 
 ### 8. ENV Variables (Not in Repo)
-**What:** `backend/.env` must define `DATABASE_URL`, `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`, `ONET_API_TIMEOUT`.  
+**What:** `backend/.env` must define `DATABASE_URL` and either `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`.  
 **Why:** Security (no secrets in git) + portability.  
 **Agent action:** Use `backend/.env.example` as template. Do not commit `.env`.
 
@@ -102,15 +102,12 @@ career-counselor-ai/
 │   │   ├── ai_service.py       # Claude/OpenAI wrapper (get_ai_response)
 │   │   ├── career_service.py   # Fit scoring, roadmap generation logic
 │   │   └── task_service.py     # Task CRUD + progress tracking
-│   ├── scripts/
-│   │   └── seed_onet.py        # O*NET population script (fetches API or uses fallback)
-│   ├── seeds/
-│   │   └── onet_fallback.json  # Hardcoded occupations + skills (backup if API fails)
+│   ├── seed_demo.py            # Demo user and progress seed script
 │   └── __pycache__/
 ├── docs/
-│   ├── SPECIFICATION.md        # **SOURCE OF TRUTH** (11 features, DB schema, API contracts, O*NET strategy)
+│   ├── SPECIFICATION.md        # **SOURCE OF TRUTH** (features, DB schema, API contracts)
 │   ├── AGENT_EXECUTION_PLAN.md # Day-by-day parallel execution (4 agents, May 18-20)
-│   ├── ARCHITECTURE.md         # Updated: DB design, O*NET integration, React as Phase 2
+│   ├── ARCHITECTURE.md         # Updated: DB design, React as Phase 2
 │   ├── IMPLEMENTATION_READY.md # Checklist: what changed, risks, success metrics
 │   ├── CLASSMATE_TASKS.md      # Tasks for non-tech classmates (UML, Feasibility, Test cases, Sprint report)
 │   ├── todo.md                 # Task tracking (mirrors tasks.csv)
@@ -140,9 +137,9 @@ career-counselor-ai/
 
 | Document | Purpose | When to Read |
 |---|---|---|
-| `docs/SPECIFICATION.md` | **Source of truth:** 9 locked features, 7 DB tables, API contracts, O*NET strategy | Every session start |
+| `docs/SPECIFICATION.md` | **Source of truth:** locked features, DB tables, API contracts | Every session start |
 | `docs/AGENT_EXECUTION_PLAN.md` | Parallel agent assignments, deliverables, timeline (May 18-20) | If working in parallel |
-| `docs/ARCHITECTURE.md` | 3-layer design (Presentation/Application/Data), O*NET justification, Phase 2 React notes | Before major refactors |
+| `docs/ARCHITECTURE.md` | 3-layer design (Presentation/Application/Data), Phase 2 React notes | Before major refactors |
 | `.github/skills/git-workflow.md` | Branch strategy (`dev` integration branch), commit conventions | Before every commit |
 | `docs/CLASSMATE_TASKS.md` | Templates for non-tech teammates (UML, Feasibility, Test Cases, Sprint Report) | If distributing docs work |
 | `docs/IMPLEMENTATION_READY.md` | What changed from original plan, risk assessment, success metrics | Before Day 1 execution (May 18) |
@@ -187,13 +184,13 @@ See `.github/skills/git-workflow.md` for full conventions.
 By May 20, 9am:
 
 1. **Backend runs** without errors: `uvicorn backend.main:app --reload`
-2. **Database seeded**: O*NET data populated (50+ careers, 100+ skills, cross-referenced)
+2. **Database seeded**: local career and roadmap data populated
 3. **All API endpoints respond**: Endpoints defined in SPECIFICATION.md Section 3 (6 endpoints: assess, roadmap, careers, careers/{id}/skills, tasks, cv-analyze). Exact schemas subject to change, but feature set is locked
 4. **Frontend submits forms** to backend (not mock data)
 5. **Results display** in output sections (career fits with scores, roadmap steps with tasks)
 6. **SE deliverables complete**: UML diagrams (4), Feasibility Study, Test Cases, Sprint Report (from CLASSMATE_TASKS.md)
 7. **Code quality**: All commits follow git workflow, docs updated in same PR, no secrets in git
-8. **Presentation ready**: Can demo end-to-end flow, explain architecture, discuss O*NET integration
+8. **Presentation ready**: Can demo end-to-end flow and explain the architecture
 
 ---
 
@@ -208,7 +205,7 @@ By May 20, 9am:
 | Create new features not in SPECIFICATION.md | Scope creep, missed deadline | Defer to Phase 2, add to todo.md as `(Phase 2)` |
 | Frontend calls hardcoded Python functions | Violates 3-layer architecture | Frontend calls FastAPI endpoints via HTTP |
 | React/TypeScript/Webpack setup | Violates MVP constraint (Vanilla JS) | Use plain HTML/CSS/JS only |
-| Ignore O*NET schema | Leads to inaccurate fit scoring | Ensure career_skills junction table is populated |
+| Ignore database relationships | Leads to inaccurate fit scoring | Ensure career_skills junction table is populated |
 
 ---
 
@@ -217,17 +214,11 @@ By May 20, 9am:
 **Q: The frontend is slow. Can we use React?**  
 A: No. React is Phase 2 (documented in ARCHITECTURE.md). MVP uses Vanilla JS. If performance is truly critical, optimize JS/CSS first (caching, lazy loading).
 
-**Q: What if the O*NET API is down?**  
-A: Fallback to `backend/seeds/onet_fallback.json` (hardcoded 50+ occupations + skills). Seed script handles this automatically.
-
 **Q: Do we need unit tests for the MVP?**  
 A: No. Tests are Phase 2. For MVP, manual testing + integration tests (does API respond correctly when frontend calls it?).
 
 **Q: Can we add user authentication?**  
 A: No. MVP uses session-based tracking (UUID, no login). User accounts are Phase 2.
-
-**Q: What's the Pakistan careers strategy?**  
-A: Manual curation (20-30 careers) + O*NET base (other roles). Decided during implementation, not pre-locked.
 
 **Q: Can we change the DB schema after May 17?**  
 A: No. Schema is locked in SPECIFICATION.md. Changes require 2 days to re-seed, re-test, re-document.
@@ -237,7 +228,7 @@ A: No. Schema is locked in SPECIFICATION.md. Changes require 2 days to re-seed, 
 ## Help & Feedback
 
 - **Stuck?** Check `docs/SPECIFICATION.md` Section 4 (API contracts) or Section 5 (DB schema)
-- **Unclear architecture?** Read `docs/ARCHITECTURE.md` (why 3 layers, why O*NET matters)
+- **Unclear architecture?** Read `docs/ARCHITECTURE.md` (why 3 layers and how the data flow works)
 - **Git issues?** Consult `.github/skills/git-workflow.md` (branch strategy, commit format)
 - **Report bugs/feedback?** https://github.com/anomalyco/opencode (OpenCode issues) or update `docs/todo.md` (project tasks)
 

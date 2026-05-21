@@ -21,7 +21,7 @@ Phase 5: Advanced features
 ```
 Phase 1 (NOW): Full MVP with ALL core features
 ├── 11 features implemented
-├── Database with O*NET integration
+├── Database-backed career data
 ├── FastAPI backend (8+ endpoints)
 ├── Vanilla JS frontend
 ├── Task tracking + progress
@@ -41,12 +41,12 @@ React mentioned in ARCHITECTURE.md as Phase 2 (future, not MVP)
 | 3 | "What to do right now" (3 steps) | Spec'd |
 | 4 | Weekly task breakdown + tracking | Spec'd |
 | 5 | Skill snapshots + re-assessment | Spec'd |
-| 6 | Career growth outlook (O*NET) | Spec'd |
+| 6 | Career growth outlook | Spec'd |
 | 7 | Profile skill gap analysis (no CV upload parsing in MVP) | Spec'd |
 | 8 | Career type flags | Spec'd |
 | 9 | Pakistan-specific careers | Spec'd |
 | 10 | Database schema | Spec'd |
-| 11 | O*NET seed script | Spec'd |
+| 11 | Local seed script | Spec'd |
 
 ---
 
@@ -57,7 +57,7 @@ React mentioned in ARCHITECTURE.md as Phase 2 (future, not MVP)
 |----------|---------|
 | `docs/SPECIFICATION.md` | LOCKED spec - source of truth for all 11 features, DB schema, API endpoints |
 | `docs/AGENT_EXECUTION_PLAN.md` | Day-by-day timeline for parallel agent execution |
-| `docs/ARCHITECTURE.md` | Updated with new DB design, O*NET integration, React noted as Phase 2 |
+| `docs/ARCHITECTURE.md` | Updated with new DB design, React noted as Phase 2 |
 
 ### For Classmates (Tasks)
 | Document | Purpose |
@@ -68,8 +68,8 @@ React mentioned in ARCHITECTURE.md as Phase 2 (future, not MVP)
 
 ## Key Design Decisions (LOCKED - NO CHANGES)
 
-**Database is essential** (O*NET cross-references, fit scoring)  
-**O*NET as data source** (verified facts, not AI-generated)  
+**Database is essential** (fit scoring, persistence, and progress tracking)  
+**Local project data as the source** (seeded career catalog used by the app)  
 **Vanilla JS frontend** (no build tools, faster development)  
 **React documented as Phase 2** (not MVP)  
 **Session-based, no user accounts** (MVP simplicity)  
@@ -126,7 +126,7 @@ Noon:      Presentation rehearsal
 | Agent | What | Time |
 |-------|------|------|
 | Agent 1 | FastAPI backend + Claude integration | 12-14 hrs |
-| Agent 2 | Database + O*NET seed script | 10-12 hrs |
+| Agent 2 | Database + seed script | 10-12 hrs |
 | Agent 3 | Frontend HTML/JS + API integration | 14-16 hrs |
 | Agent 4 | All documentation | 12-14 hrs |
 
@@ -153,7 +153,7 @@ Noon:      Presentation rehearsal
 | Risk | Likelihood | Mitigation |
 |------|-----------|-----------|
 | Claude API fails | Low | Fallback to rule-based responses |
-| O*NET API unavailable | Low | Use hardcoded fallback seed data |
+| Seed data unavailable | Low | Use the local JSON seed data |
 | Timeline too tight | Medium | Strict scope lock, parallel execution |
 | Frontend not ready | Low | Use static prototype if needed |
 | Database corruption | Very Low | Backups, test migrations |
@@ -165,7 +165,7 @@ Noon:      Presentation rehearsal
 ## Success Metrics
 
 Working demo showing all 11 features  
-Database populated with O*NET data  
+Database populated with local project data  
 FastAPI running locally without errors  
 Frontend forms → API → results flowing  
 Task tracking working (mark tasks done)  

@@ -14,7 +14,7 @@ You're creating the **system design documentation** based on the locked specific
 - `docs/SPECIFICATION.md` — Complete system spec (what will be built)
 - `docs/ARCHITECTURE.md` — Architecture layers (presentation, application, data)
 - `frontend/index.html` — Current UI structure
-- `backend/dummy_data.py` — Current data structure
+- `backend/models.py` — Current data structure and persistence models
 
 ---
 
@@ -151,7 +151,7 @@ Can we build this with available tech?
 - Backend: FastAPI (fast, modern)
 - Frontend: Vanilla JS (no build tools needed)
 - AI: Claude API (accessible via API)
-- O*NET: Free public API (verified data source)
+- Local seed data: career catalog stored in the repo
 
 Risks: None identified. All technologies proven.
 ```
@@ -257,12 +257,12 @@ Deliver MVP of Career Counselor AI with core features and full documentation.
 2. Timeline-aware roadmaps
 3. Task tracking with progress %
 4. Skill snapshots + re-assessment
-5. Growth outlook display (from O*NET)
+5. Growth outlook display
 6. Profile skill-gap analysis (no CV upload parsing in MVP)
 7. Career type flags
 8. Pakistan-specific careers
 9. Database with cross-references
-10. O*NET seed script
+10. Local seed script
 11. FastAPI endpoints
 
 ## Blockers / Issues
